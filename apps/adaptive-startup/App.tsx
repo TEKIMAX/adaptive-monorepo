@@ -364,7 +364,7 @@ const App: React.FC = () => {
           onSwitchProject={handlers.handleSwitchProject}
           onNewProject={handlers.handleNewProject}
           onNavigate={(view) => {
-            if ((view as string) === 'SUBSCRIPTION') {
+            if (view === 'SUBSCRIPTION') {
               setSettingsTab('billing');
               setViewState('SETTINGS');
             } else {

@@ -5,16 +5,16 @@ import { api } from "../../convex/_generated/api";
 import { useCreateTeamMember, useCreateRole, useCreateLegalDocument, useGenerateUploadUrl } from '../../hooks/useCreate';
 import { useUpdateBusinessStructure, useUpdateOrganizationDetails, useUpdateTeamMember, useUpdateRole } from '../../hooks/useUpdate';
 import { useDeleteTeamMember, useDeleteRole, useDeleteLegalDocument } from '../../hooks/useDelete';
-import { Plus, Trash2, GraduationCap, Building2, User, Check, X, Edit2, FileText, ShieldCheck, Lock, Award, ChevronRight, ChevronDown, ArrowLeft, Mail, RefreshCw, Layout, Settings, Upload, Download, Eye, Folder, CreditCard, LogOut } from 'lucide-react';
+import { Plus, Trash2, Building2, User, Check, X, Edit2, FileText, ShieldCheck, Lock, Award, ChevronDown, Mail, RefreshCw, Layout, Settings, Folder, CreditCard, LogOut } from 'lucide-react';
 import ProjectSelector from '../ProjectSelector';
 import TabNavigation, { TABS } from '../TabNavigation';
 import { toast } from "sonner";
 import { TeamMemberTable } from '../TeamMemberTable';
 import CustomSelect from '../CustomSelect';
-import ReactMarkdown from 'react-markdown';
+
 import { Logo } from '../Logo';
 import { FileSelector } from '../Ideation/FileSelector';
-import { TipTapEditor } from '../documents/TiptapEditor';
+
 import { MemberDetailSheet } from '../MemberDetailSheet';
 
 interface TeamOrganizationProps {
@@ -106,14 +106,14 @@ const AccordionSection: React.FC<AccordionSectionProps> = ({ title, icon, childr
                         )}
                     </div>
                 </div>
-                <div className={`transition - transform duration - 200 ${isOpen ? 'rotate-180' : ''} ${hasTags ? 'text-white' : 'text-stone-400'} `}>
+                <div className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''} ${hasTags ? 'text-white' : 'text-stone-400'} `}>
                     <ChevronDown className="w-4 h-4" />
                 </div>
             </button>
 
             {isOpen && (
-                <div className={`px - 4 pb - 4 pt - 0 ${hasTags ? 'text-white' : ''} `}>
-                    <div className={`p - 4 rounded - lg ${hasTags ? 'bg-white/5 border border-white/10' : 'bg-stone-50 border border-stone-100'} `}>
+                <div className={`px-4 pb-4 pt-0 ${hasTags ? 'text-white' : ''} `}>
+                    <div className={`p-4 rounded-lg ${hasTags ? 'bg-white/5 border border-white/10' : 'bg-stone-50 border border-stone-100'} `}>
                         {children}
                     </div>
                 </div>
@@ -168,7 +168,7 @@ const TeamOrganization: React.FC<TeamOrganizationProps> = ({
     const updateMember = useUpdateTeamMember();
     const deleteMember = useDeleteTeamMember();
     const sendInvite = useAction(api.invites.sendInvite);
-    const createBillingPortalSession = useAction(api.stripe.createBillingPortalSession);
+
 
     const [isAddingMember, setIsAddingMember] = useState(false);
     const [showInviteModal, setShowInviteModal] = useState(false);

@@ -1,9 +1,0 @@
-{
-    "name": "tekimax",
-    "private": true,
-    "version": "0.1.0",
-    "scripts": {
-        "dev": "cd api_server && cargo run",
-        "build": "cd api_server && cargo build --release"
-    }
-}
