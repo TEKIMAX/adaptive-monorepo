@@ -3,6 +3,7 @@
   "private": true,
   "scripts": {
     "dev": "pnpm -r dev",
+    "dev:all": "pnpm --filter adaptive-startup --filter tekimax --parallel dev",
     "build": "pnpm -r build",
     "test": "pnpm -r test",
     "audit": "pnpm audit"
