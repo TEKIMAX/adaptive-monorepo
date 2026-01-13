@@ -85,7 +85,7 @@ export const AddMilestoneModal: React.FC<AddMilestoneModalProps> = ({
             type: newType,
             description: newDesc,
             tractionType: newTraction,
-            imageUrl: newImage,
+            imageUrl: newImage || undefined, // Convert null to undefined for Convex
             documents: selectedDocuments,
             isFeatured: isFeatured,
             theme: newTheme,
