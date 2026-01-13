@@ -1,0 +1,1017 @@
+openapi: 3.0.0
+info:
+  title: Tekimax API Gateway
+  x-logo:
+    url: "/logo.png"
+    altText: "Tekimax Logo"
+    backgroundColor: "#FFFFFF"
+  description: |
+    # Tekimax API Gateway
+    
+    > **Sovereign AI Trust & Orchestration Layer**
+    
+    The Tekimax API serves as the central nervous system for the **Sovereign Engine**, orchestrating a secure L1-L4 pipeline:
+    1.  **L1 (Conditioning)**: Privacy scrubbing & input isolation.
+    2.  **L2 (Cognition)**: Neural inference and content generation.
+    3.  **L3 (Authority)**: Cryptographic provenance and signing (C2PA).
+    4.  **L4 (Compounding)**: Immutable audit logging.
+    
+    Every response is cryptographically signed with an `X-C2PA-Manifest` header, ensuring a verifiable chain of custody.
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000
+    description: Local Gateway
+security:
+  - BearerAuth: []
+tags:
+  - name: Orchestrator
+    description: "The **Root Node**. The primary entry point that orchestrates the entire L1-L4 pipeline (Privacy -> Generation -> Signing -> Evidence)."
+  - name: Sovereign Services
+    description: "**The Trust Layer**. Independent primitives for Identity, C2PA Signing, and PII Scrubbing."
+  - name: Adaptive Architecture
+    description: "**The Brain**. Neuro-inclusive modules for Modality Adaptation, Reliability Checks, and Human Sign-Off."
+  - name: Intelligence
+    description: "**Generative Engines**. Raw access to LLMs (Text/Chat/Embeddings) and Quantum Optimization circuits."
+  - name: Infrastructure
+    description: "**System & Registry**. Manage local model files, VRAM status, and gateway versioning."
+  - name: Experimental
+    description: "**Beta Features**. New modules and simulated backends (Quantum, Adaptive Content) currently in research and development."
+  - name: Cryptography
+    description: "**Security Utilities**. Stateless primitives for AES encryption, decryption, and key generation."
+  - name: Research
+    description: "**Deep Web Analysis**. Autonomous agents that perform web search and synthesis."
+
+paths:
+  /api/llm:
+    post:
+      tags:
+        - "Intelligence"
+      summary: Run AI Request
+      description: |
+        Direct interface to the LLM Engine.
+        **Smart Routing**: Requests for specialized Sovereign Models (e.g., `granite3-guardian`) are automatically routed to the isolated **Secure Guard Node** (Docker Container) on port 11435. All other requests go to the standard engine.
+      operationId: runLlmRequest
+      requestBody:
+        description: Polymorphic request (Generate, Chat, or Embeddings)
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/GenerateRequest'
+                - $ref: '#/components/schemas/ChatRequest'
+                - $ref: '#/components/schemas/EmbeddingsRequest'
+            discriminator:
+              propertyName: type
+              mapping:
+                generate: '#/components/schemas/GenerateRequest'
+                chat: '#/components/schemas/ChatRequest'
+                embeddings: '#/components/schemas/EmbeddingsRequest'
+      responses:
+        '200':
+          description: AI Response (Signed)
+          headers:
+            X-C2PA-Manifest:
+              description: Cryptographic signature of the output
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  response:
+                    type: object
+              example:
+                response:
+                  model: "gemini-3-flash-preview"
+                  created_at: "2023-11-23T12:00:00Z"
+                  response: "Hello world"
+                  done: true
+
+  /v1/crypto/key:
+    post:
+      summary: Generate Sovereign Key
+      description: Generates a cryptographically strong 256-bit AES key (NIST SP 800-38D). The key is NOT stored on the server.
+      tags: ["Cryptography"]
+      responses:
+        '200':
+          description: Key Generated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  secret_key_base64: { type: string }
+
+  /v1/crypto/encrypt:
+    post:
+      summary: Encrypt Data (Stateless)
+      description: Encrypts data using AES-256-GCM. Requires client-provided key.
+      tags: ["Cryptography"]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                key_base64: { type: string }
+                payload: { type: string }
+      responses:
+        '200':
+          description: Encrypted Data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ciphertext_base64: { type: string }
+                  nonce_base64: { type: string }
+
+  /v1/crypto/decrypt:
+    post:
+      summary: Decrypt Data (Stateless)
+      description: Decrypts data using AES-256-GCM.
+      tags: ["Cryptography"]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                key_base64: { type: string }
+                ciphertext_base64: { type: string }
+                nonce_base64: { type: string }
+      responses:
+        '200':
+          description: Decrypted Data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  plaintext: { type: string }
+        '400':
+          description: Invalid request
+        '500':
+          description: Server error
+
+  /api/tags:
+    get:
+      tags:
+        - "Infrastructure"
+      summary: List Local Models
+      description: Returns a list of all models currently available in the local library.
+      operationId: listModels
+      responses:
+        '200':
+          description: List of models
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListResponse'
+
+  /api/tokenize:
+    post:
+      tags:
+        - "Infrastructure"
+      summary: Tokenize Text
+      operationId: tokenize
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenizeRequest'
+      responses:
+        '200':
+          description: Token list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenizeResponse'
+
+  /api/detokenize:
+    post:
+      tags:
+        - "Infrastructure"
+      summary: Detokenize IDs
+      operationId: detokenize
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DetokenizeRequest'
+      responses:
+        '200':
+          description: Reconstructed text
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DetokenizeResponse'
+
+  /api/version:
+    get:
+      tags:
+        - "Infrastructure"
+      summary: Gateway Status (Version)
+      operationId: version
+      responses:
+        '200':
+          description: Version info
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VersionResponse'
+
+  # --- Quantum Module ---
+  
+  /v1/quantum/optimize:
+    post:
+      tags:
+        - "Experimental"
+      summary: Run Quantum Optimization (Experimental)
+      description: |
+        **Objective**: Solve complex optimization problems using a Hybrid Quantum-Classical Loop.
+        
+        ### Architecture: Quantum-Enhanced Optimization
+        This endpoint interfaces with a dedicated **Quantum Neural Network (QNN)** engine to solve problems that are computationally expensive for classical logic.
+        
+        1.  **Encoding**: Maps input parameters into a high-dimensional quantum Hilbert space.
+        2.  **Processing**: Executes a Variational Quantum Circuit (VQC) to find the ground state (optimal solution).
+        3.  **Measurement**: Returns the expectation value as an optimization metric.
+        
+        **Backends**:
+        - `simulator` (Default): Uses exact statevector simulation for high-precision validation.
+        - `quantum_hardware` (Future): Routes execution to physical Quantum Processing Units (QPU) for true quantum advantage.
+
+        **Output Explanation**:
+        - `energy`: The "cost function" value. **Lower (more negative) is better.** It represents the stability of the solution.
+        - `optimal_parameters`: The specific configuration (angles/knobs) that achieved this energy score.
+      operationId: quantumOptimize
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                problem_type:
+                  type: string
+                  example: "max_cut"
+                parameters:
+                  type: object
+                  example: { "nodes": 10, "density": 0.5 }
+                backend:
+                  type: string
+                  enum: ["simulator", "ibm_cloud"]
+                  default: "simulator"
+      responses:
+        '200':
+          description: Optimization result
+          content:
+            application/json:
+              example: { "status": "success", "energy": -1.23, "backend_used": "simulator" }
+
+  # --- Sovereign Services Module ---
+  /v1/root_node/process:
+    post:
+      summary: Root Node Orchestrator (Experimental / L1-L4 Pipeline)
+      tags:
+        - Orchestrator
+        - Experimental
+      description: |
+        The "One Button" endpoint that orchestrates the entire Sovereign AI pipeline.
+        1. **L1 Conditioning**: Privacy scrubbing & input isolation.
+        2. **L2 Cognition**: LLM generation & neural reasoning.
+        3. **L3 Authority**: C2PA cryptographic signing.
+        4. **L4 Compounding**: Immutable audit logging & ledger storage.
+
+        > **Missing a Project ID?**
+        > Use `/v1/sovereign/run` with `secure_onboarding` to generate valid credentials.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                project_id:
+                  type: string
+                  example: "proj_947542c4"
+                intent:
+                  type: string
+                  description: "The user's prompt or intent."
+                  example: "Write a short email to user@example.com."
+                modality:
+                  type: string
+                  description: "Target output format (text, visual, audit)."
+                  example: "text"
+                strict_mode:
+                  type: boolean
+                  description: "If true, aborts if PII is detected."
+                  example: true
+                model:
+                  type: string
+                  description: "Specific agent model to use (e.g., bio-tutor-v1)"
+                  example: "gemini-3-flash-preview"
+                thinking_preference:
+                  type: string
+                  enum: ["off", "low", "medium", "high"]
+                  description: "Level of reasoning trace required."
+                user_id:
+                  type: string
+                  description: "The ID of the user (DID or username)."
+                  example: "did:key:z6Mk..."
+                initiator:
+                  type: string
+                  enum: ["human", "agent", "system"]
+                  description: "Who initiated the request."
+                  example: "human"
+      parameters:
+        - in: header
+          name: X-Sovereign-Key
+          schema:
+            type: string
+          description: "Optional: Base64 AES-256 key to transiently encrypt detected PII (Vault Mode)."
+      responses:
+        '200':
+          description: Successful orchestration
+          headers:
+            X-Risk-Category:
+              description: "NIST Risk Category (e.g., HIGH_RISK_WEB_SEARCH)"
+              schema:
+                type: string
+            X-NIST-Control:
+              description: "Specific mapped NIST SP 800-53 Control (e.g., AC-4)"
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  final_output:
+                    type: string
+                    description: "The generated and signed content."
+                  pipeline_trace:
+                    type: object
+                    description: "Audit trail of the pipeline execution."
+                    properties:
+                        l1_conditioning:
+                           type: object
+                           properties:
+                               sanitized: {type: boolean}
+                               detected_fields: {type: array, items: {type: string}}
+                               encrypted_pii: 
+                                 type: array
+                                 items:
+                                    type: object
+                                    properties:
+                                        label: {type: string}
+                                        ciphertext: {type: string}
+                                        nonce: {type: string}
+
+  /v1/sovereign/run:
+    post:
+      summary: Run Sovereign Service (Experimental / Opt-In)
+      tags:
+        - Sovereign Services
+      description: |
+        **The Sovereign Sidecar Endpoint**.
+        
+        Allows developers to "Opt-In" to specific Tekimax features without platform lock-in. 
+        dispatch specialized services like **Secure Onboarding**, **Content Signing (C2PA)**, or **PII Scrubbing** via a single API call.
+        
+        **Supported Services**:
+        *   `secure_onboarding`: Generates project identity & audit logs.
+        *   `sign_content`: Cryptographically parses and signs payloads.
+        *   `pii_scrub`: Redacts sensitive data locally.
+        *   `nist_audit_log`: Persists event metadata to the local sovereign node (Flight Recorder).
+        
+        > **Missing a Project ID?**
+        > Call this endpoint with `services: ["secure_onboarding"]` to generate a new, cryptographically secure `project_id` and API key.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                project_id:
+                  type: string
+                  description: "Unique identifier for the calling project/app."
+                  example: "proj_947542c4"
+                services:
+                  type: array
+                  description: "List of services to invoke in order."
+                  items:
+                    type: string
+                    enum: [secure_onboarding, sign_content, pii_scrub, nist_audit_log]
+                  example: ["pii_scrub", "sign_content", "nist_audit_log"]
+                payload:
+                  type: object
+                  description: "Generic payload map passed to the services."
+                  example: 
+                    raw_prompt_text: "Medical record for John Doe..."
+                    content_blob: "Critical medical data to sign..."
+                    author_id: "dr_smith"
+      parameters:
+        - in: header
+          name: X-Sovereign-Key
+          schema:
+            type: string
+          description: "Optional: Base64 AES-256 key to transiently encrypt detected PII (Vault Mode)."
+      responses:
+        '200':
+          description: Aggregated Service Results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  results:
+                    type: object
+              example: 
+                status: "success"
+                results:
+                  pii_scrub:
+                    clean_text: "My phone is [VAULT_PHONE]"
+                    detected_fields: ["Phone"]
+                    encrypted_pii: 
+                      - label: "Phone"
+                        ciphertext: "..."
+                        nonce: "..."
+                  sign_content:
+                    manifest_base64: "..."
+                    algorithm: "C2PA-SHA256-ES256"
+                    status: "signed"
+                  nist_audit_log:
+                    log_entry_hash: "..."
+                    compliance_status: "OK"
+
+  /v1/router/classify:
+    post:
+      tags:
+        - "Experimental"
+      summary: Sovereign Router (Cognitive Dispatch)
+      description: |
+        **Objective**: Deterministically routes user intent to the correct specialized tool or sub-agent.
+        **Mechanism**: Uses a dedicated, high-speed cognitive model (e.g., specialized Gemma) to classify intent without executing it.
+      operationId: classifyIntent
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: ["intent"]
+              properties:
+                intent:
+                  type: string
+                  example: "Route a delivery for tonight"
+                project_id:
+                  type: string
+      responses:
+        '200':
+          description: Classification result
+          headers:
+            X-C2PA-Manifest:
+              description: Cryptographic signature of the classification
+              schema:
+                type: string
+          content:
+            application/json:
+              example: { "tool": "quantum_optimize", "confidence": 0.99, "reasoning": "Logistics intent detected" }
+
+  # --- Adaptive Architecture Endpoints ---
+
+  /v1/stream-learning-content:
+    post:
+      tags:
+        - "Adaptive Architecture"
+      summary: Modality-Adaptive Learning (Experimental)
+      description: |
+        **Objective**: Self-adapting content generation parsed by local LLM. Adapts raw content into Visual, Auditory, or Kinesthetic formats.
+        
+        **Use Case Example**:
+        *   **Input**: "The mitochondria is the powerhoues of the cell."
+        *   **Modality**: "kinesthetic"
+        *   **Result**: "Imagine a tiny battery pack inside every room of a factory..." (Kinesthetic Metaphor)
+      operationId: streamLearningContent
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [content, modality]
+              properties:
+                content:
+                  type: string
+                  example: "The mitochondria is the powerhouse of the cell."
+                modality:
+                  type: string
+                  example: "kinesthetic"
+                model:
+                  type: string
+                  description: "Optional model override for this specific task."
+                  example: "gemini-3-flash-preview"
+      responses:
+        '200':
+          description: Content adapted
+          headers:
+            X-C2PA-Manifest:
+              description: Cryptographic signature of the adapted content
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  modality:
+                    type: string
+                  adapted_content:
+                    type: string
+                  source:
+                    type: string
+                    description: "The internal engine version that performed the adaptation (e.g., 'LLM-Adapter-v4')."
+              example: { "status": "success", "modality": "kinesthetic", "adapted_content": "Imagine a battery...", "source": "LLM-Adapter-v4" }
+
+  /v1/agent/validate:
+    post:
+      tags:
+        - "Adaptive Architecture"
+      summary: Reliability & Failure Logic (Experimental)
+      description: |
+        **Objective**: Mitigates the exponential decay of AI accuracy in long-running workflows through rigorous validation sign-offs.
+        
+        **Purpose**: As workflow steps increase, reliability decays. This endpoint utilizes deterministic fallbacks and HITL (Human-in-the-Loop) gates to secure multi-step success.
+        
+        **Objective**: Prevents "hallucination cascades" in complex agentic chains, ensuring reliability.
+      operationId: agentValidate
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ValidateRequest'
+      responses:
+        '200':
+          description: Validation result
+          content:
+            application/json:
+              example: { "status": "validated", "final_confidence": 0.98, "initial_confidence": 1.0, "current_step": 1, "decay_rate": 0.05, "message": "Reliability calculated using exponential decay model." }
+        '415':
+          description: Unsupported Media Type (Ensure Content-Type is application/json)
+
+  /v1/activity-log:
+    get:
+      tags:
+        - "Sovereign Services"
+      summary: Verified Privacy & Logging
+      description: |
+        **Objective**: Ensures automated modules only access app data via explicit manifests, with user-facing logs for every read/write action.
+        
+        **Purpose**: Systems must be 'Opt-In' by default. This endpoint implements signed manifests and real-time activity logging to mitigate centralized privacy risks.
+        
+        **Security Goal**: Builds trust through radical transparency, allowing users to audit exactly what the AI accessed and why.
+      operationId: activityLog
+      responses:
+        '200':
+          description: Access logs
+          content:
+            application/json:
+              example: { "logs": [{ "timestamp": "2024-01-01T12:00:00Z", "module": "Summarizer", "action": "READ", "target": "User.Bio" }] }
+
+  /v1/signoff:
+    post:
+      tags:
+        - "Adaptive Architecture"
+      summary: Human Agency Preservation
+      description: |
+        **Objective**: Provides meaningful human oversight pathways for every orchestrated AI decision.
+        
+        **Purpose**: Quantifiable oversight metrics ensuring AI augments decisions without replacing human ingenuity.
+        
+        **Security Goal**: Guarantees distinct "human accountability zones," preserving agency even in highly automated systems.
+      operationId: signoff
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignoffRequest'
+      responses:
+        '200':
+          description: Signoff recorded
+          content:
+            application/json:
+              example: { "status": "recorded", "decision": "approve", "signer": "admin_user", "human_agency_manifest": "c2pa_sig_...", "message": "Human decision has been cryptographically preserved." }
+
+  /v1/security/isolate:
+    post:
+      tags:
+        - "Sovereign Services"
+      summary: Semantic Security
+      description: |
+        **Objective**: Prevents AI systems from executing malicious code or exfiltrating data when processing untrusted inputs.
+        
+        **Purpose**: Hardening the architectural boundary between instructions and data to neutralize indirect prompt injection attacks.
+        
+        **Security Goal**: Enterprise-grade security that treats all external context as potentially hostile, sanitizing inputs before execution.
+      operationId: promptIsolate
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IsolateRequest'
+      responses:
+        '200':
+          description: Context isolated
+          content:
+            application/json:
+              example: { "status": "isolated", "sanitized": true, "threat_level": "none" }
+
+  /v1/research/deep:
+    post:
+      tags:
+        - "Research"
+      summary: Deep Research Agent
+      description: |
+        **Objective**: Conducts a multi-step research process using live web data.
+        1. **Search**: Queries the Local Search Interface.
+        2. **Synthesize**: Uses a local LLM to aggregate findings into a coherent answer.
+        3. **Cite**: Provides numbered citations linking back to source URLs.
+      operationId: deepResearch
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeepResearchRequest'
+      responses:
+        '200':
+          description: Research Result
+          content:
+            application/json:
+              example: { "status": "success", "query": "What is rust lang?", "synthesis": "Rust is a systems programming language...", "sources": [{"title": "Rust", "url": "https://rust-lang.org"}] }
+
+  /v1/chat/stream:
+    post:
+      tags:
+        - "Research"
+      summary: Streaming Chat
+      description: |
+        **Objective**: Real-time streaming chat completion. 
+        Supports **thinking** models (reasoning traces) and **vision** models (image analysis).
+        Returns Server-Sent Events (SSE).
+      operationId: streamChat
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatRequest'
+      responses:
+        '200':
+          description: Stream of JSON chunks
+          content:
+            text/event-stream:
+              schema:
+                type: string
+                example: "data: {...}\n\n"
+ 
+  # --- Compatibility Layer ---
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: apiKey
+      name: Authorization
+      in: header
+      description: "Enter your key with the prefix: 'Bearer sk_...'"
+  schemas:
+    # --- Data Structures ---
+    ChatMessage:
+      type: object
+      properties:
+        role:
+          type: string
+          enum: [user, assistant, system]
+        content:
+          type: string
+      example:
+        role: "user"
+        content: "Hello, world!"
+
+    ToolCall:
+      type: object
+      properties:
+        function:
+          $ref: '#/components/schemas/ToolCallFunction'
+      example:
+        function:
+          name: "get_weather"
+          arguments: { "city": "Paris" }
+
+    ToolCallFunction:
+      type: object
+      properties:
+        name: 
+          type: string
+        arguments: 
+          type: object
+      example:
+        name: "get_weather"
+        arguments: { "city": "Paris" }
+
+    Tool:
+      type: object
+      properties:
+        type:
+          type: string
+        function:
+          $ref: '#/components/schemas/ToolFunctionDefinition'
+      example:
+        type: "function"
+        function:
+          name: "get_weather"
+          description: "Get current weather"
+          parameters: 
+            type: "object"
+            properties:
+              city:
+                type: "string"
+
+    ToolFunctionDefinition:
+      type: object
+      properties:
+        name:
+          type: string
+        parameters:
+          type: object
+      example:
+        name: "get_weather"
+        parameters: { "type": "object", "properties": { "city": { "type": "string" } } }
+
+    # --- Requests ---
+    # --- Requests ---
+    GenerateRequest:
+      type: object
+      required: [type, model, prompt]
+      properties:
+        type: { type: string, enum: [generate], default: "generate" }
+        model: { type: string }
+        prompt: { type: string }
+        stream: { type: boolean, default: false }
+        system: { type: string }
+        template: { type: string }
+        options: { type: object }
+      example:
+        model: "gemini-3-flash-preview"
+        prompt: "Write a haiku about Rust."
+        stream: false
+
+    ChatRequest:
+      type: object
+      required: [type, engine, model, messages]
+      properties:
+        type: { type: string, enum: [chat] }
+        engine: { type: string, description: "Execution engine (e.g. sovereign, local)", default: "sovereign" }
+        model: { type: string }
+        think: 
+           oneOf:
+             - type: boolean
+             - type: string
+           description: "Enable thinking trace (true/false) or set level (low/medium/high)"
+        system:
+           type: string
+           description: "Optional system message to prepend to the conversation."
+        messages: 
+          type: array
+          items: 
+            $ref: '#/components/schemas/ChatMessage'
+        tools:
+          type: array
+          items:
+            $ref: '#/components/schemas/Tool'
+        stream: { type: boolean, default: false }
+      example:
+        type: "chat"
+        engine: "sovereign"
+        model: "gemini-3-flash-preview"
+        system: "You are a helpful assistant."
+        messages:
+          - role: "user"
+            content: "What is the capital of France?"
+        stream: false
+
+    EmbeddingsRequest:
+      type: object
+      required: [type, engine, model, input]
+      properties:
+        type: { type: string, enum: [embeddings] }
+        engine: { type: string }
+        model: { type: string }
+        input: { oneOf: [{type: string}, {type: array, items: {type: string}}] }
+      example:
+        type: "embeddings"
+        engine: "sovereign"
+        model: "gemini-3-flash-preview"
+        input: "Embed this sentence."
+
+    TokenizeRequest:
+      type: object
+      required: [model, prompt]
+      properties:
+        model: { type: string }
+        prompt: { type: string }
+      example:
+        model: "gemini-3-flash-preview"
+        prompt: "Hello world"
+
+    DetokenizeRequest:
+      type: object
+      required: [model, tokens]
+      properties:
+        model: { type: string }
+        tokens: { type: array, items: { type: integer } }
+      example:
+        model: "gemini-3-flash-preview"
+        tokens: [15496, 5916]
+
+    # --- Responses ---
+    LlmResponse:
+      type: object
+      properties:
+        response: { type: object }
+
+    ListResponse:
+      type: object
+      properties:
+        models:
+          type: array
+          items: { $ref: '#/components/schemas/ModelSummary' }
+        
+    ModelSummary:
+      type: object
+      properties:
+        name: { type: string }
+        size: { type: integer }
+        details: { type: object }
+
+    PsResponse:
+      type: object
+      properties:
+        models: { type: array, items: { $ref: '#/components/schemas/Ps' } }
+
+    Ps:
+      type: object
+      properties:
+        model: { type: string }
+        size_vram: { type: integer }
+    
+    TokenizeResponse:
+      type: object
+      properties:
+        tokens: { type: array, items: { type: integer } }
+    
+    DetokenizeResponse:
+      type: object
+      properties:
+        prompt: { type: string }
+
+    # --- Management Requests ---
+    ShowRequest:
+      type: object
+      required: [model]
+      properties:
+        model: { type: string }
+        verbose: { type: boolean }
+      example:
+        model: "gemma3:1b"
+        verbose: false
+
+    ShowResponse:
+      type: object
+      properties:
+        details: { type: object }
+        parameters: { type: string }
+
+    VersionResponse:
+      type: object
+      properties:
+        version: { type: string }
+
+    CreateRequest:
+      type: object
+      required: [model]
+      properties:
+        model: { type: string }
+        from: { type: string }
+        stream: { type: boolean }
+      example:
+        model: "mario-bot"
+        from: "gemma3:1b"
+        stream: false
+
+    CopyRequest:
+      type: object
+      required: [source, destination]
+      properties:
+        source: { type: string }
+        destination: { type: string }
+      example:
+        source: "gemma3:1b"
+        destination: "gemma3-backup"
+
+    DeleteRequest:
+      type: object
+      required: [model]
+      properties:
+        model: { type: string }
+      example:
+        model: "gemma3-backup"
+
+    PullRequest:
+      type: object
+      required: [model]
+      properties:
+        model: { type: string }
+        stream: { type: boolean }
+        insecure: { type: boolean }
+      example:
+        model: "gemini-3-flash-preview"
+        stream: false
+
+    PushRequest:
+      type: object
+      required: [model]
+      properties:
+        model: { type: string }
+        stream: { type: boolean }
+        insecure: { type: boolean }
+      example:
+        model: "my-private-model"
+        stream: false
+
+    # --- Adaptive Architecture Requests ---
+    AdaptiveRequest:
+      type: object
+      required: [content, modality]
+      properties:
+        content: { type: string }
+        modality: { type: string, enum: [visual, auditory, kinesthetic, text] }
+        model: { type: string }
+      example:
+        content: "The mitochondria is the powerhouse of the cell."
+        modality: "kinesthetic"
+
+    ValidateRequest:
+      type: object
+      required: [current_step, initial_confidence]
+      properties:
+        current_step: { type: integer }
+        initial_confidence: { type: number }
+      example:
+        current_step: 1
+        initial_confidence: 1.0
+
+    SignoffRequest:
+      type: object
+      required: [approver_id, decision, resource_id]
+      properties:
+        approver_id: { type: string }
+        decision: { type: string, enum: [approve, reject] }
+        resource_id: { type: string }
+      example:
+        approver_id: "admin_1"
+        decision: "approve"
+        resource_id: "res_abc_123"
+
+    IsolateRequest:
+      type: object
+      required: [input_context]
+      properties:
+        input_context: { type: string }
+      example:
+        input_context: "SELECT * FROM users;"
+
+    DeepResearchRequest:
+      type: object
+      required: [query]
+      properties:
+        query: { type: string }
+        max_results: { type: integer, default: 5 }
+        model: { type: string }
+        response_schema: 
+          type: object
+          description: "Optional JSON Schema to enforce structured output."
+      example:
+        query: "Latest developments in Quantum Machine Learning"
+        max_results: 5
+        response_schema:
+          type: object
+          properties:
+            summary: { type: string }
+            key_points: { type: array, items: { type: string } }
+          required: [summary, key_points]

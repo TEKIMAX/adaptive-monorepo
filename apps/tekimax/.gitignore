@@ -1,0 +1,21 @@
+# Rust
+/target
+Cargo.lock
+
+# Environment
+.env
+*.pem
+
+# infrastructure
+**/ollama_data/
+
+# Logs & Data
+*.log
+*.jsonl
+sovereign_db.json
+response.json
+
+# IDEs
+.vscode/
+.idea/
+.DS_Store

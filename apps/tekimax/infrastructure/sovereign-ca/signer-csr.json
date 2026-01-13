@@ -1,0 +1,15 @@
+{
+    "CN": "Tekimax Sovereign Signer",
+    "key": {
+        "algo": "rsa",
+        "size": 2048
+    },
+    "names": [
+        {
+            "C": "US",
+            "L": "Sovereign Enclave",
+            "O": "Tekimax",
+            "OU": "Sovereign AI Signer"
+        }
+    ]
+}

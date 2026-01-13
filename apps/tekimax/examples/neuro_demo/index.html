@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tekimax | Neuro-Adaptive Demo</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- KaTeX for LaTeX Rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+</head>
+
+<body>
+    <div class="container tabbed-mode">
+        <header>
+            <h1>TEKIMAX <small style="font-size: 0.5em; opacity: 0.7;">// NEURO-ADAPTIVE SUITE</small></h1>
+            <div id="status-feed" class="status-badge">System Ready</div>
+        </header>
+
+        <nav class="main-nav">
+            <button id="nav-dashboard" class="nav-tab active">Orchestrator Dashboard</button>
+            <button id="nav-chat" class="nav-tab">Sovereign Chat</button>
+        </nav>
+
+        <!-- DASHBOARD VIEW -->
+        <div id="view-dashboard" class="dashboard-grid">
+            <!-- POLICY COLUMN -->
+            <section class="panel" style="border-left: 4px solid #00ff9d;">
+                <h2>0. Architecture DNA (School Policy)</h2>
+                <p style="font-size: 0.8em; opacity: 0.7; margin-bottom: 0.5rem;">Defines the sovereign ruleset for all
+                    AI
+                    interactions on campus.</p>
+
+                <textarea id="input-policy"
+                    style="height: 80px; font-family: monospace; font-size: 0.9em; color: #00ff9d;">You are a Socratic Tutor for a High School Biology class. NEVER give the answer directly. Instead, ask guiding questions to help the student derive the answer.</textarea>
+
+                <button id="btn-update-policy"
+                    style="background: rgba(0, 255, 157, 0.1); border: 1px solid #00ff9d; color: #00ff9d; margin-top: 0.5rem;">Update
+                    System Policy</button>
+                <button id="btn-open-forge"
+                    style="background: rgba(123, 97, 255, 0.1); border: 1px solid #7b61ff; color: #7b61ff; margin-top: 0.5rem; margin-left: 0.5rem;">Launch
+                    Agent Forge</button>
+
+                <div style="margin-top: 1rem; border-top: 1px dashed #333; padding-top: 1rem;">
+                    <label for="agent-selector"
+                        style="display: block; font-size: 0.8em; opacity: 0.7; margin-bottom: 0.5rem;">Active Sovereign
+                        Agent</label>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <select id="agent-selector"
+                            style="flex-grow: 1; padding: 0.5rem; background: #111; color: #fff; border: 1px solid #333; border-radius: 4px;">
+                            <option value="gemini-3-flash-preview">gemini-3-flash-preview (Default)</option>
+                        </select>
+                        <button id="btn-delete-agent"
+                            style="background: rgba(255, 0, 85, 0.1); border: 1px solid #ff0055; color: #ff0055; padding: 0.5rem;">X</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- INPUT COLUMN -->
+            <section class="panel">
+                <h2>1. Source Context</h2>
+
+                <label for="input-content">Raw Learning Material (Text)</label>
+                <textarea
+                    id="input-content">The mitochondria is the powerhouse of the cell. It generates most of the chemical energy needed to power the cell's biochemical reactions.</textarea>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div>
+                        <label for="input-modality">Target Cognitive Modality</label>
+                        <select id="input-modality">
+                            <option value="visual">Visual (Imagery & Metaphors)</option>
+                            <option value="kinesthetic">Kinesthetic (Action & Feeling)</option>
+                            <option value="auditory">Auditory (Rhythm & Dialogue)</option>
+                            <option value="analytical">Analytical (Data & Logic)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="input-strict" style="cursor: pointer;">
+                            <input type="checkbox" id="input-strict" checked>
+                            Strict Privacy (PII Scrub)
+                        </label>
+                    </div>
+                    <div style="grid-column: 1 / -1;">
+                        <label for="input-thinking">Reasoning Trace (CoT)</label>
+                        <select id="input-thinking">
+                            <option value="off">Off (Standard)</option>
+                            <option value="on">On (Default)</option>
+                            <option value="low">Low (GPT-OSS)</option>
+                            <option value="medium" selected>Medium (GPT-OSS)</option>
+                            <option value="high">High (Deep Reasoning)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button id="btn-process">initiate_root_node_sequence()</button>
+            </section>
+
+            <!-- OUTPUT COLUMN -->
+            <section class="panel">
+                <h2 style="cursor: pointer; display: flex; justify-content: space-between; align-items: center;"
+                    onclick="document.getElementById('accordion-content').classList.toggle('hidden'); this.querySelector('span').textContent = this.querySelector('span').textContent === '▼' ? '▲' : '▼';">
+                    2. Adapted Intelligence
+                    <span style="font-size: 0.8em; opacity: 0.7;">▼</span>
+                </h2>
+
+                <div id="accordion-content" class="hidden">
+                    <div id="output-adaptive" style="white-space: pre-wrap; line-height: 1.6; min-height: 100px;">
+                        Waiting for orchestration...
+                    </div>
+                </div>
+
+                <hr style="border: 0; border-top: 1px dashed #333; margin: 1rem 0;">
+
+                <h2>3. Pipeline Trace (L1-L4)</h2>
+                <div id="trace-log" class="pipeline-trace">
+                    <!-- Trace items will appear here -->
+                </div>
+            </section>
+
+            <!-- HUMAN AGENCY COLUMN (Full Width) -->
+            <section class="panel hidden" id="signoff-panel" style="grid-column: 1 / -1; border-color: #ff0055;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h2>4. Human Agency Sign-Off (Blocking Gate)</h2>
+                        <p style="margin:0; opacity: 0.8; max-width: 600px;">
+                            The system has halted. A human decision is required to cryptographically validate this
+                            outcome
+                            before the workflow can complete.
+                        </p>
+                    </div>
+                    <div style="display: flex; gap: 1rem; align-items: flex-end;">
+                        <div>
+                            <label>Approver ID (DID)</label>
+                            <input type="text" id="input-approver" value="admin_human_01">
+                        </div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button id="btn-deny" style="background: #ff0055; color: white;">DENY</button>
+                            <button id="btn-approve" style="background: #00ff9d; color: black;">APPROVE</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="signature-display" class="signature-block hidden"></div>
+            </section>
+
+            <!-- TRANSACTION LOG (Full Width) -->
+            <section class="panel" style="grid-column: 1 / -1; background: #000;">
+                <h2>5. Transaction Log (Traceability)</h2>
+                <div id="transaction-log" class="transaction-log">
+                    <!-- Trace items will appear here -->
+                    <div class="log-entry system">
+                        <span class="ts">READY</span> System waiting for input...
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- CHAT VIEW (NEW) -->
+        <div id="view-chat" class="chat-container hidden">
+            <div id="chat-history" class="chat-history">
+                <div class="chat-message ai">
+                    <span class="meta">SYSTEM [Secure]</span>
+                    Sovereign Verification complete. Secure channel established.<br>
+                    I am ready to process your requests within the bounds of School Policy.
+                </div>
+            </div>
+            <div class="chat-input-area">
+                <textarea id="input-chat" placeholder="Type your message securely..."
+                    onkeydown="if(event.keyCode===13 && !event.shiftKey){event.preventDefault(); document.getElementById('btn-chat-send').click();}"></textarea>
+                <button id="btn-chat-send" style="height: 50px; padding: 0 2rem;">SEND</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add marked.js for Markdown Rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- AGENT FORGE MODAL -->
+    <dialog id="forge-modal"
+        style="background: #111; color: #eee; border: 1px solid #7b61ff; padding: 2rem; border-radius: 8px; max-width: 500px; width: 100%;">
+        <h2 style="margin-top:0;">Model Factory (Agent Forge)</h2>
+        <p style="font-size: 0.8em; opacity: 0.7; margin-bottom: 1.5rem;">Spawn new Sovereign Agents with specific
+            capabilities.</p>
+
+        <div style="display: grid; gap: 1rem; margin-bottom: 1rem;">
+            <div>
+                <label for="input-agent-name">Agent Name</label>
+                <input type="text" id="input-agent-name" placeholder="e.g., bio-tutor-v1" value="my-agent-v1"
+                    style="width: 100%; box-sizing: border-box;">
+            </div>
+            <div>
+                <label for="input-base-model" style="display:block; margin-bottom:0.5rem;">Base Model Archetype</label>
+                <select id="input-base-model"
+                    style="width: 100%; background: #222; color: #fff; border: 1px solid #444; padding: 0.5rem; border-radius: 4px; box-sizing: border-box;">
+                    <option value="gemini-3-flash-preview">gemini-3-flash-preview (Default / Fast)</option>
+                    <option value="gemini-3-pro-preview">gemini-3-pro-preview (Deep Reasoning)</option>
+                    <option value="llama3.1:8b">llama3.1:8b (Fast)</option>
+                    <option value="nemotron-mini">nemotron-mini (NVIDIA Efficient)</option>
+                </select>
+            </div>
+
+            <div
+                style="grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; border-top: 1px dashed #333; padding-top: 1rem; margin-top: 0.5rem;">
+                <div>
+                    <label for="input-temperature"
+                        style="font-size: 0.9em; opacity: 0.8; display: flex; justify-content: space-between;">
+                        Temperature <span id="val-temperature" style="color: #7b61ff;">0.7</span>
+                    </label>
+                    <input type="range" id="input-temperature" min="0" max="1" step="0.1" value="0.7"
+                        style="width: 100%; accent-color: #7b61ff;">
+                </div>
+                <div>
+                    <label for="input-context"
+                        style="font-size: 0.9em; opacity: 0.8; display: flex; justify-content: space-between;">
+                        Context Window <span id="val-context" style="color: #7b61ff;">8192</span>
+                    </label>
+                    <input type="range" id="input-context" min="2048" max="32768" step="1024" value="8192"
+                        style="width: 100%; accent-color: #7b61ff;">
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-bottom: 1.5rem; background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 4px;">
+            <label style="margin-bottom: 0.5rem; color: #fff; display: block;">Capabilities</label>
+            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                <label
+                    style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.9em; color: #fff;">
+                    <input type="checkbox" id="check-signing" checked>
+                    Cryptographic Signing (C2PA)
+                </label>
+                <label
+                    style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.9em; color: #fff;">
+                    <input type="checkbox" id="check-tools">
+                    Function Calling (Generic)
+                </label>
+
+                <div style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px dashed #333;">
+                    <span style="font-size: 0.75em; opacity: 0.6; display: block; margin-bottom: 0.25rem;">AUTHENTIC
+                        TOOLS (SERVER API)</span>
+                    <label
+                        style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.9em; color: #fff;">
+                        <input type="checkbox" id="check-quantum">
+                        Quantum Optimization (Hybrid)
+                    </label>
+                    <label
+                        style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.9em; color: #fff;">
+                        <input type="checkbox" id="check-adaptive">
+                        Adaptive Content Engine
+                    </label>
+                    <label
+                        style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.9em; color: #fff;">
+                        <input type="checkbox" id="check-security">
+                        Security Isolation Protocol
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 0.5rem;">
+            <button id="btn-close-forge"
+                style="background: transparent; border: 1px solid #444; color: #888;">Cancel</button>
+            <button id="btn-create-agent"
+                style="background: rgba(123, 97, 255, 0.1); border: 1px solid #7b61ff; color: #7b61ff;">Spawn
+                Agent</button>
+        </div>
+    </dialog>
+
+    <script src="app.js"></script>
+</body>
+
+</html>

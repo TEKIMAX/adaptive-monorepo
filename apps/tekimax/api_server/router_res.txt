@@ -1,0 +1,11 @@
+HTTP/1.1 200 OK
+content-type: application/json
+x-c2pa-manifest: c2pa_mock_signature_fedcba0987654321_MOCK
+vary: origin, access-control-request-method, access-control-request-headers
+access-control-allow-origin: *
+access-control-expose-headers: *
+x-ai-assisted: true
+content-length: 180
+date: Mon, 05 Jan 2026 13:35:44 GMT
+
+{"tool":"quantum_optimize","confidence":0.98,"reasoning":"The user is asking for path optimization, which is a classic complex optimization problem involving math and algorithms."}

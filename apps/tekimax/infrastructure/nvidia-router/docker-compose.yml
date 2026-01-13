@@ -1,0 +1,15 @@
+services:
+  triton-router:
+    image: nvcr.io/nvidia/tritonserver:24.05-py3
+    container_name: triton_router
+    ports:
+      - "8000:8000"
+      - "8001:8001"
+      - "8002:8002"
+    volumes:
+      - ./model_repository:/models
+    command: [ "tritonserver", "--model-repository=/models", "--log-verbose=1" ]
+    shm_size: 1g
+    ulimits:
+      memlock: -1
+      stack: 67108864

@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  guard-node:
+    image: ollama/ollama:latest
+    container_name: sovereign-guard-node
+    ports:
+      - "11435:11434" # Expose on 11435 to avoid conflict with local Ollama
+    volumes:
+      - ./ollama_data:/root/.ollama
+    restart: always
+    environment:
+      - OLLAMA_KEEP_ALIVE=24h

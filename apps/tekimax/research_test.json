@@ -1,0 +1,21 @@
+Note: Unnecessary use of -X or --request, POST is already inferred.
+* Host localhost:3000 was resolved.
+* IPv6: ::1
+* IPv4: 127.0.0.1
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0*   Trying [::1]:3000...
+* connect to ::1 port 3000 from ::1 port 52000 failed: Connection refused
+*   Trying 127.0.0.1:3000...
+* Connected to localhost (127.0.0.1) port 3000
+> POST /v1/research/deep HTTP/1.1
+> Host: localhost:3000
+> User-Agent: curl/8.7.1
+> Accept: */*
+> Content-Type: application/json
+> Authorization: Bearer sk_W9pc4uYR6EJufv0TcBUtw3rk0s0h32UUis73bUohIoMPga
+> Content-Length: 30
+> 
+} [30 bytes data]
+* upload completely sent off: 30 bytes
+100    30    0     0  100    30      0     24  0:00:01  0:00:01 --:--:--    24100    30    0     0  100    30      0     13  0:00:02  0:00:02 --:--:--    13100    30    0     0  100    30      0      9  0:00:03  0:00:03 --:--:--     9100    30    0     0  100    30      0      7  0:00:04  0:00:04 --:--:--     7100    30    0     0  100    30      0      5  0:00:06  0:00:05  0:00:01     5100    30    0     0  100    30      0      4  0:00:07  0:00:06  0:00:01     0100    30    0     0  100    30      0      4  0:00:07  0:00:07 --:--:--     0
