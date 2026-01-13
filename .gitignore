@@ -46,3 +46,6 @@ dist/
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# Apps to exclude
+apps/ai-backend
