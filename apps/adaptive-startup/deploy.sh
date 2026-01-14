@@ -82,6 +82,8 @@ npx convex env set STRIPE_CLIENT_ID "$STRIPE_CLIENT_ID"
 npx convex env set STRIPE_TOKEN_PACK_PRICE_ID "$STRIPE_TOKEN_PACK_PRICE_ID"
 npx convex env set API_KEY "$API_KEY"
 npx convex env set PRICE_ID "$PRICE_ID"
+npx convex env set OLLAMA_BASE_URL "$OLLAMA_BASE_URL"
+npx convex env set OLLAMA_MODEL "$OLLAMA_MODEL"
 
 echo -e "${GREEN}✅ Convex environment variables synced${NC}"
 

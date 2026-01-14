@@ -136,12 +136,12 @@ const App: React.FC = () => {
   // Handle Stripe Redirects
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const success = params.get('success');
-    const canceled = params.get('canceled');
+    const success = params.get('success') || params.get('subscription_success');
+    const canceled = params.get('canceled') || params.get('subscription_canceled');
 
     if (success === 'true' && isAuthenticated && convexUser?.onboardingCompleted) {
       toast.success("Subscription updated successfully!");
-      setViewState('SETTINGS'); // Redirect to settings to see the updated plan
+      setViewState('ONBOARDING'); // Redirect to dashboard/project list
       window.history.replaceState({}, document.title, window.location.pathname);
     } else if (canceled === 'true') {
       window.history.replaceState({}, document.title, window.location.pathname);

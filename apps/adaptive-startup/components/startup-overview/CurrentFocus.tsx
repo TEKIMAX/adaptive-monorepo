@@ -38,7 +38,7 @@ export const CurrentFocus: React.FC<CurrentFocusProps> = ({
                         )}
                         <button
                             onClick={() => onNavigate('GOALS')}
-                            className="text-xs text-stone-400 hover:text-nobel-gold flex items-center gap-1"
+                            className="bg-black text-white px-4 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider hover:bg-stone-800 flex items-center gap-1"
                         >
                             View <ChevronRight className="w-3 h-3" />
                         </button>

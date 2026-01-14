@@ -55,11 +55,11 @@ export const callOllamaInternal = async (
 ): Promise<string> => {
     const envApiKey = process.env.OLLAMA_API_KEY;
     const finalApiKey = apiKey || envApiKey;
-    const envModel = process.env.OLLAMA_MODEL || "gemini-3-flash-preview";
+    const envModel = process.env.OLLAMA_MODEL || "gemini-3-flash-preview:cloud";
     const envNvidiaModel = process.env.OLLAMA_NVIDIA_MODEL || "nemotron-mini:latest";
 
     // Base cloud endpoint from environment
-    const envEndpoint = process.env.OLLAMA_ENDPOINT || process.env.OLLAMA_BASE_URL || "https://api.tekimax.com";
+    const envEndpoint = process.env.OLLAMA_ENDPOINT || process.env.OLLAMA_BASE_URL || "https://ollama.com";
 
     // Detect if we should use NVIDIA endpoint (Tekimax Proxy specific)
     const useNvidia = modelName.includes('nemotron') || modelName.includes('nvidia');
@@ -126,7 +126,7 @@ export const callOllamaInternal = async (
         if (isOfficialOllama) {
             apiPath = "/api";
         } else {
-            apiPath = useNvidia ? '/api/nvidia/cloud' : '/api/cloud';
+            apiPath = useNvidia ? '/api/nvidia/cloud' : '/api';
         }
 
         if (!baseUrl.includes(apiPath)) {
@@ -169,7 +169,12 @@ export const callOllamaInternal = async (
                 'Content-Type': 'application/json',
                 // Always send Authorization header for Cloud calls if key is present
                 // NVIDIA calls on Tekimax proxy typically don't need the key (public/internal)
-                ...((finalApiKey) ? { 'Authorization': `Bearer ${finalApiKey}` } : {})
+                ...((finalApiKey) ? { 'Authorization': `Bearer ${finalApiKey}` } : {}),
+                // Add Cloudflare Access headers if present
+                ...(process.env.CLOUDFLARE_ACCESS_ID && process.env.CLOUDFLARE_ACCESS_SECRET ? {
+                    'CF-Access-Client-Id': process.env.CLOUDFLARE_ACCESS_ID,
+                    'CF-Access-Client-Secret': process.env.CLOUDFLARE_ACCESS_SECRET
+                } : {})
             },
             body: JSON.stringify(body)
         });

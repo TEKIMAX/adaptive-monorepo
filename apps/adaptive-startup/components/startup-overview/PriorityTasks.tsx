@@ -32,13 +32,13 @@ export const PriorityTasks: React.FC<PriorityTasksProps> = ({
                     </div>
                     <button
                         onClick={() => onNavigate('TEAM')}
-                        className={`px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all ${currentView === 'TEAM' ? 'bg-nobel-gold text-white' : 'text-stone-400 hover:text-nobel-gold'}`}
+                        className="bg-black text-white px-4 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all hover:bg-stone-800"
                     >
                         Team
                     </button>
                     <button
                         onClick={handleGenerateSummary}
-                        className="px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider text-nobel-gold hover:bg-nobel-gold/5 flex items-center gap-1.5"
+                        className="bg-nobel-gold text-white px-4 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider hover:bg-[#A38035] flex items-center gap-1.5 ml-2 transition-colors"
                     >
                         <Sparkles className="w-3 h-3" /> Strategy
                     </button>

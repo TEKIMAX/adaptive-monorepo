@@ -248,23 +248,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                   </div>
 
                   <h1 className="font-serif text-6xl md:text-7xl lg:text-7xl text-stone-900 leading-[1.1] tracking-tight">
-                     Master the Art of <br />
-                     <span className="text-nobel-gold font-mono font-bold relative inline-block whitespace-nowrap bg-stone-900/5 px-2 py-0.5 rounded border border-nobel-gold/10">
-                        0 to 1.
-                        <svg className="absolute w-full h-2 -bottom-0.5 left-0 text-nobel-gold opacity-40" viewBox="0 0 100 10" preserveAspectRatio="none">
-                           <path d="M0 5 Q 50 12 100 5" stroke="currentColor" strokeWidth="3" fill="none" />
-                        </svg>
-                     </span>
+                     The Operating System for <span className="text-nobel-gold font-bold">0 to 1.</span>
                   </h1>
 
-                  <div className="flex flex-col gap-1">
-                     <h2 className="text-xl md:text-2xl font-serif text-stone-500 italic">
-                        From First Idea to Institutional Proof.
-                     </h2>
-                  </div>
-
                   <p className="text-lg md:text-xl text-stone-600 leading-relaxed font-light max-w-xl mx-auto lg:mx-0">
-                     The only workspace that thinks with you. Model your financials and audit your strategy with context-aware AI. Every founder needs a command center. This is yours.
+                     Validate your market, audit your strategy, and execute your vision with context-aware AI. A unified workspace for early-stage founders.
                   </p>
 
                   <div className="flex flex-col items-center lg:items-start gap-4 pt-4">

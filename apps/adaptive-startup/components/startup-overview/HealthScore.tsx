@@ -24,7 +24,7 @@ export const HealthScore: React.FC<HealthScoreProps> = ({
         >
             <button
                 onClick={() => setShowHealthSheet(true)}
-                className="absolute top-4 right-4 p-1.5 text-stone-400 hover:text-nobel-gold hover:bg-nobel-gold/10 rounded-full transition-all"
+                className="absolute top-4 right-4 p-1.5 bg-black text-white hover:bg-stone-800 rounded-full transition-all"
             >
                 <Info className="w-4 h-4" />
             </button>

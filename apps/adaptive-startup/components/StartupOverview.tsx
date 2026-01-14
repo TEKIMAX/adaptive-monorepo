@@ -23,6 +23,7 @@ import { DailySchedule } from './startup-overview/DailySchedule';
 import { CurrentFocus } from './startup-overview/CurrentFocus';
 import { PriorityTasks } from './startup-overview/PriorityTasks';
 import { HealthExplanationSheet } from './startup-overview/HealthExplanationSheet';
+import { StrategySummarySheet } from './startup-overview/StrategySummarySheet';
 import { GoalSheet } from './startup-overview/GoalSheet';
 
 interface StartupOverviewProps {
@@ -337,7 +338,7 @@ export const StartupOverview: React.FC<StartupOverviewProps> = ({
                                         <div className="px-5 py-3 bg-stone-50 text-center">
                                             <button
                                                 onClick={() => { setShowNotifications(false); onNavigate('NOTIFICATIONS'); }}
-                                                className="text-[11px] font-bold uppercase tracking-widest text-stone-500 hover:text-stone-900 transition-colors"
+                                                className="bg-black text-white rounded-full px-4 py-2 text-[11px] font-bold uppercase tracking-widest hover:bg-stone-800 transition-colors"
                                             >
                                                 View Timeline
                                             </button>
@@ -459,6 +460,13 @@ export const StartupOverview: React.FC<StartupOverviewProps> = ({
                 currentGoals={data.goals || []}
                 onCreateGoal={createGoal as any}
                 projectId={data.id as any}
+            />
+
+            <StrategySummarySheet
+                isOpen={showSummarySheet}
+                onClose={() => setShowSummarySheet(false)}
+                summary={summaryContent}
+                isGenerating={isGeneratingSummary}
             />
         </div>
     );

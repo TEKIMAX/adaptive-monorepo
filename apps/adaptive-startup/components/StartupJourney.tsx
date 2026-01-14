@@ -35,6 +35,8 @@ const StartupJourney: React.FC<StartupJourneyProps> = ({
     const [expandedYear, setExpandedYear] = useState<number | null>(null);
     const [storyMode, setStoryMode] = useState(false); // Legacy toggle, maybe useful for mobile later
 
+    const [isStoryCollapsed, setIsStoryCollapsed] = useState(true);
+
     // Save Dialog State
     const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
 
@@ -99,7 +101,7 @@ const StartupJourney: React.FC<StartupJourneyProps> = ({
     return (
         <div className="h-screen flex flex-col bg-stone-50">
             {/* Header */}
-            <header className="px-8 py-4 bg-white border-b border-stone-200 flex items-center justify-between z-20 shadow-sm">
+            <header className="px-8 py-4 bg-white border-b border-stone-200 flex items-center justify-between z-50 shadow-sm relative">
                 <div className="flex items-center gap-6">
                     <Logo imageClassName="h-8 w-auto" />
                     <div className="w-px h-6 bg-stone-200" />
@@ -143,6 +145,8 @@ const StartupJourney: React.FC<StartupJourneyProps> = ({
                 <StoryPanel
                     data={data}
                     updateProject={updateProject}
+                    isCollapsed={isStoryCollapsed}
+                    onToggleCollapse={() => setIsStoryCollapsed(!isStoryCollapsed)}
                 />
 
                 <TimelinePanel

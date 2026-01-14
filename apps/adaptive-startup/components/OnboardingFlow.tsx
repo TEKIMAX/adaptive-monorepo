@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '@workos-inc/authkit-react';
 import { useMutation, useAction } from "convex/react";
 import { api } from "../convex/_generated/api";
-import { Check, ChevronRight, Building2, User, CreditCard, Shield, ArrowLeft } from 'lucide-react';
+import { Check, ChevronRight, Building2, User, CreditCard, Shield, ArrowLeft, Sparkles, Brain, Briefcase, Lightbulb } from 'lucide-react';
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -17,8 +17,9 @@ const STEPS = [
     { id: 1, title: 'Profile', icon: User },
     { id: 2, title: 'Role', icon: Shield },
     { id: 3, title: 'Organization', icon: Building2 },
-    { id: 4, title: 'Plan', icon: CreditCard },
-    { id: 5, title: 'Complete', icon: Check },
+    { id: 4, title: 'AI Config', icon: Sparkles },
+    { id: 5, title: 'Plan', icon: CreditCard },
+    { id: 6, title: 'Complete', icon: Check },
 ];
 
 const ROLES = [
@@ -76,6 +77,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ user, onComplete
         name: user?.name || "",
         startupName: "",
         hypothesis: "We help [Target Audience] solve [Problem] by [Solution] with [Secret Sauce].",
+        aiInteractionStyle: user?.onboardingData?.aiInteractionStyle || "Strategist",
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
@@ -106,8 +108,8 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ user, onComplete
     useEffect(() => {
         // Only skip if fully active (paid) or completed, allowing 'trialing' users to see the Plan step
         const isPaid = user?.subscriptionStatus === 'active';
-        if (currentStep === 4 && (isPaid || (mode !== 'create' && user?.onboardingCompleted))) {
-            setCurrentStep(5);
+        if (currentStep === 5 && (isPaid || (mode !== 'create' && user?.onboardingCompleted))) {
+            setCurrentStep(6);
         }
     }, [currentStep, user?.subscriptionStatus, mode, user?.onboardingCompleted]);
 
@@ -128,10 +130,10 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ user, onComplete
                 });
             }
 
-            // Logic to SKIP Payment Step (4) if already paid (active)
+            // Logic to SKIP Payment Step (5) if already paid (active)
             const isPaid = user?.subscriptionStatus === 'active';
-            if (nextStep === 4 && (isPaid || (mode !== 'create' && user?.onboardingCompleted))) {
-                nextStep = 5; // Jump to complete
+            if (nextStep === 5 && (isPaid || (mode !== 'create' && user?.onboardingCompleted))) {
+                nextStep = 6; // Jump to complete
             }
 
             setCurrentStep(nextStep);
@@ -363,6 +365,75 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ user, onComplete
                                 return (
                                     <div className="space-y-8">
                                         <div>
+                                            <h2 className="text-4xl font-serif text-stone-900 mb-2">Customize your AI Partner</h2>
+                                            <p className="text-stone-500 text-lg">Choose the personality that fits your working style.</p>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                            {/* Strategist */}
+                                            <button
+                                                onClick={() => setFormData({ ...formData, aiInteractionStyle: 'Strategist' })}
+                                                className={`p-6 border rounded-2xl text-left transition-all ${formData.aiInteractionStyle === 'Strategist' ? 'bg-stone-900 border-stone-900 ring-2 ring-stone-900 ring-offset-2' : 'bg-white border-stone-200 hover:border-stone-400'}`}
+                                            >
+                                                <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-4 ${formData.aiInteractionStyle === 'Strategist' ? 'bg-stone-800 text-white' : 'bg-stone-100 text-stone-600'}`}>
+                                                    <Brain className="w-6 h-6" />
+                                                </div>
+                                                <h3 className={`font-serif text-lg mb-2 ${formData.aiInteractionStyle === 'Strategist' ? 'text-white' : 'text-stone-900'}`}>The Strategist</h3>
+                                                <p className={`text-xs leading-relaxed ${formData.aiInteractionStyle === 'Strategist' ? 'text-stone-400' : 'text-stone-500'}`}>
+                                                    Socratic and thoughtful. Asks probing questions to guide you to the answer. Best for deep planning.
+                                                </p>
+                                            </button>
+
+                                            {/* Executive */}
+                                            <button
+                                                onClick={() => setFormData({ ...formData, aiInteractionStyle: 'Executive' })}
+                                                className={`p-6 border rounded-2xl text-left transition-all ${formData.aiInteractionStyle === 'Executive' ? 'bg-stone-900 border-stone-900 ring-2 ring-stone-900 ring-offset-2' : 'bg-white border-stone-200 hover:border-stone-400'}`}
+                                            >
+                                                <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-4 ${formData.aiInteractionStyle === 'Executive' ? 'bg-stone-800 text-white' : 'bg-stone-100 text-stone-600'}`}>
+                                                    <Briefcase className="w-6 h-6" />
+                                                </div>
+                                                <h3 className={`font-serif text-lg mb-2 ${formData.aiInteractionStyle === 'Executive' ? 'text-white' : 'text-stone-900'}`}>The Executive</h3>
+                                                <p className={`text-xs leading-relaxed ${formData.aiInteractionStyle === 'Executive' ? 'text-stone-400' : 'text-stone-500'}`}>
+                                                    Direct and concise. Focuses on execution and action plans. Wants answers, not questions.
+                                                </p>
+                                            </button>
+
+                                            {/* Visionary */}
+                                            <button
+                                                onClick={() => setFormData({ ...formData, aiInteractionStyle: 'Visionary' })}
+                                                className={`p-6 border rounded-2xl text-left transition-all ${formData.aiInteractionStyle === 'Visionary' ? 'bg-stone-900 border-stone-900 ring-2 ring-stone-900 ring-offset-2' : 'bg-white border-stone-200 hover:border-stone-400'}`}
+                                            >
+                                                <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-4 ${formData.aiInteractionStyle === 'Visionary' ? 'bg-stone-800 text-white' : 'bg-stone-100 text-stone-600'}`}>
+                                                    <Lightbulb className="w-6 h-6" />
+                                                </div>
+                                                <h3 className={`font-serif text-lg mb-2 ${formData.aiInteractionStyle === 'Visionary' ? 'text-white' : 'text-stone-900'}`}>The Visionary</h3>
+                                                <p className={`text-xs leading-relaxed ${formData.aiInteractionStyle === 'Visionary' ? 'text-stone-400' : 'text-stone-500'}`}>
+                                                    Creative and expansive. Generates wild ideas and alternative business models.
+                                                </p>
+                                            </button>
+                                        </div>
+
+                                        <div className="pt-4 flex items-center justify-between">
+                                            <button
+                                                onClick={handleBack}
+                                                className="group flex items-center gap-2 text-stone-400 font-bold uppercase tracking-widest text-xs hover:text-stone-600 hover:bg-stone-100 px-4 py-2 rounded-full transition-all"
+                                            >
+                                                <ArrowLeft className="w-4 h-4" /> Back
+                                            </button>
+                                            <button
+                                                onClick={handleNext}
+                                                disabled={isSubmitting}
+                                                className="group flex items-center justify-center gap-2 bg-stone-900 text-white rounded-full px-8 py-3 font-bold uppercase tracking-widest text-xs hover:bg-stone-800 hover:gap-3 transition-all disabled:opacity-50 disabled:hover:gap-2"
+                                            >
+                                                {isSubmitting ? 'Saving...' : 'Plan'} <ChevronRight className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                );
+                            case 5:
+                                return (
+                                    <div className="space-y-8">
+                                        <div>
                                             <h2 className="text-4xl font-serif text-stone-900 mb-2">Choose Your Path</h2>
                                             <p className="text-stone-500 text-lg">Start with a trial or commit to building your legacy.</p>
                                         </div>
@@ -474,7 +545,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ user, onComplete
                                         </div>
                                     </div>
                                 );
-                            case 5:
+                            case 6:
                                 return (
                                     <div className="space-y-8">
                                         <div>

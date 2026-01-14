@@ -150,7 +150,7 @@ const callAI = async (
     responseSchema?: any,
     retryCount = 0,
     tools: any[] = [],
-    modelName: string = "gemini-3-flash-preview", // Updated default
+    modelName: string = "gemini-3-flash-preview:cloud", // Updated default
     ollamaApiKey?: string
 ): Promise<string> => {
     try {
@@ -244,7 +244,7 @@ export const suggestCanvasSection = action({
         `;
 
         // Use the requested model or default to the standard working model
-        return callAI(ctx, prompt, SYSTEM_INSTRUCTION, undefined, undefined, 0, [], args.modelName || "gemini-3-flash-preview");
+        return callAI(ctx, prompt, SYSTEM_INSTRUCTION, undefined, undefined, 0, [], args.modelName || "gemini-3-flash-preview:cloud");
     }
 });
 
@@ -2104,7 +2104,7 @@ Output format:
 
 Keep it short (max 150 words).`;
 
-        const memo = await callAI(ctx, prompt, "You are a startup coach.", undefined, undefined, 0, [], "gemini-3-flash-preview");
+        const memo = await callAI(ctx, prompt, "You are a startup coach.", undefined, undefined, 0, [], "cloud");
 
         // Save it
         await ctx.runMutation(internal.dailyMemos.saveDailyMemo, {

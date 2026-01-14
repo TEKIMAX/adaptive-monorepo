@@ -432,6 +432,7 @@ export const updateOnboardingStep = mutation({
             startupName: v.optional(v.string()),
             hypothesis: v.optional(v.string()),
             foundingYear: v.optional(v.string()),
+            aiInteractionStyle: v.optional(v.string()),
         }))
     },
     handler: async (ctx, args) => {

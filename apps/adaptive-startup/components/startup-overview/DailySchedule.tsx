@@ -37,7 +37,7 @@ export const DailySchedule: React.FC<DailyScheduleProps> = ({
                 </div>
                 <button
                     onClick={() => onNavigate('CALENDAR')}
-                    className="text-xs text-stone-400 hover:text-nobel-gold flex items-center gap-1"
+                    className="bg-black text-white hover:bg-stone-800 rounded-full px-4 py-1 text-xs transition-all flex items-center gap-1 font-bold tracking-wide"
                 >
                     View all <ChevronRight className="w-3 h-3" />
                 </button>
@@ -77,6 +77,6 @@ export const DailySchedule: React.FC<DailyScheduleProps> = ({
                     </div>
                 )}
             </div>
-        </motion.div>
+        </motion.div >
     );
 };

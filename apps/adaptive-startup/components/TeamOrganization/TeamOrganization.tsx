@@ -1014,7 +1014,7 @@ const TeamOrganization: React.FC<TeamOrganizationProps> = ({
                                     {!isAddingRole ? (
                                         <button
                                             onClick={() => setIsAddingRole(true)}
-                                            className="px-4 py-2 bg-stone-900 text-white rounded-full text-xs font-bold uppercase tracking-wider hover:bg-stone-800 transition-colors flex items-center gap-2 shadow-sm"
+                                            className="px-4 py-2 bg-black text-white rounded-full text-xs font-bold uppercase tracking-wider hover:bg-stone-800 transition-colors flex items-center gap-2 shadow-sm"
                                         >
                                             <Plus className="w-3 h-3" /> Create New Role
                                         </button>
@@ -1345,7 +1345,7 @@ const TeamOrganization: React.FC<TeamOrganizationProps> = ({
                                     <div className="mt-8 flex justify-end">
                                         <button
                                             onClick={() => setShowStructureSheet(false)}
-                                            className="px-6 py-3 bg-stone-900 text-white rounded-lg font-bold uppercase tracking-wider text-xs hover:bg-nobel-gold transition-colors shadow-lg"
+                                            className="px-6 py-3 bg-black text-white rounded-full font-bold uppercase tracking-wider text-xs hover:bg-stone-800 transition-colors shadow-lg"
                                         >
                                             Save & Close
                                         </button>
@@ -1463,7 +1463,7 @@ const TeamOrganization: React.FC<TeamOrganizationProps> = ({
                                 <button
                                     onClick={handleSaveMember}
                                     disabled={!memberName || !memberEmail}
-                                    className="w-full py-3 bg-stone-900 text-white rounded-lg font-bold uppercase tracking-wider text-xs hover:bg-nobel-gold transition-colors disabled:opacity-50 mt-4"
+                                    className="w-full py-3 bg-black text-white rounded-full font-bold uppercase tracking-wider text-xs hover:bg-stone-800 transition-colors disabled:opacity-50 mt-4"
                                 >
                                     {editingMemberId ? 'Save Changes' : 'Add Member'}
                                 </button>

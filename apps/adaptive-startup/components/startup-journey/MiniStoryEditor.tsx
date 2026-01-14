@@ -11,12 +11,13 @@ turndownService.remove(['style', 'script']);
 interface MiniStoryEditorProps {
     content: string;
     onChange: (html: string) => void;
+    className?: string;
 }
 
-export const MiniStoryEditor: React.FC<MiniStoryEditorProps> = ({ content, onChange }) => {
+export const MiniStoryEditor: React.FC<MiniStoryEditorProps> = ({ content, onChange, className = '' }) => {
     const editor = useEditor({
         extensions: [StarterKit],
-        content: '', // Initial content empty, set via useEffect to handle async conversion
+        content: '',
         onUpdate: ({ editor }) => {
             const html = editor.getHTML();
             const markdown = turndownService.turndown(html);
@@ -24,7 +25,7 @@ export const MiniStoryEditor: React.FC<MiniStoryEditorProps> = ({ content, onCha
         },
         editorProps: {
             attributes: {
-                class: 'prose prose-nobel max-w-none focus:outline-none min-h-[50vh] px-8 py-6 text-stone-800 font-sans leading-loose',
+                class: 'prose prose-nobel max-w-none focus:outline-none min-h-full px-8 py-6 text-stone-800 font-sans leading-loose',
             },
         },
     });
@@ -45,9 +46,9 @@ export const MiniStoryEditor: React.FC<MiniStoryEditorProps> = ({ content, onCha
     if (!editor) return null;
 
     return (
-        <div className="border border-stone-200 rounded-xl overflow-hidden bg-white">
+        <div className={`border border-stone-200 rounded-xl overflow-hidden bg-white flex flex-col ${className}`}>
             {/* Toolbar */}
-            <div className="flex items-center gap-1 px-3 py-2 bg-stone-50 border-b border-stone-200">
+            <div className="flex items-center gap-1 px-3 py-2 bg-stone-50 border-b border-stone-200 shrink-0">
                 <button
                     onClick={() => editor.chain().focus().toggleBold().run()}
                     className={`p-2 rounded hover:bg-white transition-colors ${editor.isActive('bold') ? 'bg-white shadow-sm text-nobel-gold' : 'text-stone-500'} `}
@@ -87,7 +88,7 @@ export const MiniStoryEditor: React.FC<MiniStoryEditorProps> = ({ content, onCha
                 </button>
             </div>
             {/* Editor */}
-            <EditorContent editor={editor} />
+            <EditorContent editor={editor} className="flex-grow [&>div]:h-full" />
         </div>
     );
 };

@@ -3,11 +3,7 @@ import { action, mutation, query, internalQuery } from "./_generated/server";
 import { Id } from "./_generated/dataModel";
 import { api } from "./_generated/api";
 
-// Ensure this environment variable is set in Convex dashboard
-// const API_KEY = process.env.GEMINI_API_KEY || ""; // Deprecated for this file
-const API_BASE = "https://api.tekimax.com";
 
-// --- TOOL DEFINITIONS (OpenAI / NVIDIA Format) ---
 
 const tableTool = {
     type: "function",
@@ -693,6 +689,8 @@ export const sendMessage = action({
         const identity = await ctx.auth.getUserIdentity();
         if (!identity) throw new Error("Unauthorized");
 
+        const user = await ctx.runQuery(api.users.getUser);
+
         // 0. CHECK LIMITS
         const limit = await ctx.runQuery(api.usage.checkLimit);
         if (!limit.allowed) {
@@ -753,15 +751,45 @@ ${contextData.interviews || "No interviews yet."}
             }
         }
 
-        const systemInstruction = `You are a world-class Socratic Venture Consultant specialized in ${args.pageContext}. 
+        const interactionStyle = user?.onboardingData?.aiInteractionStyle || "Strategist";
+
+        let personaDirective = "";
+        if (interactionStyle === "Executive") {
+            personaDirective = `
+    PERSONA: THE EXECUTIVE.
+    - You are direct, concise, and result-oriented.
+    - Do NOT ask Socratic questions. Provide answers and action plans immediately.
+    - Focus on execution, speed, and ROI.
+    - Be brief. Bullet points are your friend.
+        `;
+        } else if (interactionStyle === "Visionary") {
+            personaDirective = `
+    PERSONA: THE VISIONARY.
+    - You are creative, expansive, and high-energy.
+    - Focus on "What if?" and "Why not?". Encourage big thinking.
+    - Suggest alternative business models and wild ideas.
+    - Do not be constrained by current feasibility.
+        `;
+        } else {
+            // Strategist (Default)
+            personaDirective = `
+    PERSONA: THE STRATEGIST (SOCRATIC).
+    - You are thoughtful, analytical, and probing.
+    - Use the Socratic Method: Guide the user to the answer with questions.
+    - Challenge assumptions and ensure rigorous logic.
+        `;
+        }
+
+        const systemInstruction = `You are a world-class Venture Consultant specialized in ${args.pageContext}. 
     ${projectContextString}
 
-    CRITICAL SOCRATIC DIRECTIVES (Use Project Context as source of truth):
-    1. **Socratic Method**: Do not just give answers. Guide the user to discover insights from their own data. Ask probing questions based on their LEAN CANVAS and HYPOTHESIS.
-    2. **Grounding**: Every response must be strictly grounded in the user's actual project data unless explicitly asked for external market data. Quote their own hypothesis or metrics back to them.
-    3. **Strategic Drift Monitor**: If the user's request contradicts their stated HYPOTHESIS, flag it immediately (e.g., "You mentioned X, but your hypothesis is Y. Is this a pivot?").
-    4. **Logical Gap Hunter**: Identify missing links (e.g., "You have a B2B revenue model but your customer segments are consumers. How do you bridge this?").
-    5. **Venture Audit**: Act as a proactive partner. Don't simply obey; audit the sanity of the request.
+    ${personaDirective}
+
+    CRITICAL DIRECTIVES (Use Project Context as source of truth):
+    1. **Grounding**: Every response must be strictly grounded in the user's actual project data unless explicitly asked for external market data. Quote their own hypothesis or metrics back to them.
+    2. **Strategic Drift Monitor**: If the user's request contradicts their stated HYPOTHESIS, flag it immediately (e.g., "You mentioned X, but your hypothesis is Y. Is this a pivot?").
+    3. **Logical Gap Hunter**: Identify missing links (e.g., "You have a B2B revenue model but your customer segments are consumers. How do you bridge this?").
+    4. **Venture Audit**: Act as a proactive partner. Don't simply obey; audit the sanity of the request.
 
     DATA PRESENTATION & TOOL USAGE:
     You have access to a suite of specialized visualization tools. You MUST use them whenever applicable.
@@ -811,11 +839,13 @@ ${contextData.interviews || "No interviews yet."}
         ];
 
         try {
-            // Define Payload for NVIDIA Endpoint
-            const targetUrl = `${API_BASE}/api/nvidia/cloud/chat`;
+            // Define Endpoint
+            const envEndpoint = process.env.OLLAMA_ENDPOINT || "https://api.tekimax.com";
+            const baseUrl = envEndpoint.replace(/\/$/, '');
+            const targetUrl = `${baseUrl}/api/chat`;
 
             const payload = {
-                model: "nvidia/nemotron-3-nano-30b-a3b",
+                model: "gemini-3-flash-preview:cloud",
                 messages: streamMessages,
                 stream: true,
                 temperature: 0.7,
@@ -823,27 +853,32 @@ ${contextData.interviews || "No interviews yet."}
                 max_tokens: 2048,
                 tools: ALL_TOOLS,
                 tool_choice: "auto",
-                // chat_template_kwargs: { "enable_thinking": true } // Requested by user
-                chat_template_kwargs: { "enable_thinking": false } // Disabled for speed
+                chat_template_kwargs: { "enable_thinking": false }
             };
-
 
             const response = await fetch(targetUrl, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(process.env.OLLAMA_API_KEY ? { 'Authorization': `Bearer ${process.env.OLLAMA_API_KEY}` } : {}),
+                    ...(process.env.CLOUDFLARE_ACCESS_ID && process.env.CLOUDFLARE_ACCESS_SECRET ? {
+                        'CF-Access-Client-Id': process.env.CLOUDFLARE_ACCESS_ID,
+                        'CF-Access-Client-Secret': process.env.CLOUDFLARE_ACCESS_SECRET
+                    } : {})
+                },
                 body: JSON.stringify(payload)
             });
 
             if (!response.ok) {
                 const errText = await response.text();
-                throw new Error(`NVIDIA Proxy Error (${response.status}): ${errText}`);
+                throw new Error(`AI Service Error (${response.status}): ${errText}`);
             }
 
             if (!response.body) {
                 throw new Error("No response body for streaming");
             }
 
-            // Manual SSE Parsing
+            // Manual Stream Parsing (SSE & NDJSON)
             const reader = response.body.getReader();
             const decoder = new TextDecoder();
             let buffer = "";
@@ -862,22 +897,41 @@ ${contextData.interviews || "No interviews yet."}
 
                 for (const line of lines) {
                     const trimmed = line.trim();
-                    if (!trimmed || trimmed === 'data: [DONE]') continue;
+                    if (!trimmed) continue;
 
+                    let data: any = null;
+
+                    // 1. Handle SSE Format (data: {...})
                     if (trimmed.startsWith('data: ')) {
+                        const dataStr = trimmed.slice(6);
+                        if (dataStr === '[DONE]') continue;
                         try {
-                            const dataStr = trimmed.slice(6);
-                            const data = JSON.parse(dataStr);
+                            data = JSON.parse(dataStr);
+                        } catch (e) { continue; }
+                    }
+                    // 2. Handle NDJSON Format ({...})
+                    else if (trimmed.startsWith('{')) {
+                        try {
+                            data = JSON.parse(trimmed);
+                        } catch (e) { continue; }
+                    }
 
-                            // 1. Handle Text Content
-                            const contentDelta = data.choices?.[0]?.delta?.content;
-                            // 2. Handle Reasoning Content (if provided by enable_thinking)
-                            const reasoningDelta = data.choices?.[0]?.delta?.reasoning_content;
+                    if (data) {
+                        try {
+                            // Extract Content (Support OpenAI & Ollama formats)
+                            const contentDelta =
+                                data.choices?.[0]?.delta?.content ||
+                                data.message?.content ||
+                                "";
 
-                            // Update DB if we have content OR reasoning
+                            // Extract Reasoning
+                            const reasoningDelta =
+                                data.choices?.[0]?.delta?.reasoning_content ||
+                                "";
+
+                            // Update DB
                             if (contentDelta || reasoningDelta) {
                                 if (contentDelta) fullText += contentDelta;
-
                                 await ctx.runMutation(api.aiChat.appendToMessage, {
                                     messageId,
                                     contentChunk: contentDelta || undefined,
@@ -885,7 +939,7 @@ ${contextData.interviews || "No interviews yet."}
                                 });
                             }
 
-                            // 3. Handle Tool Calls
+                            // Extract Tool Calls (OpenAI format usually)
                             const toolCallsDelta = data.choices?.[0]?.delta?.tool_calls;
                             if (toolCallsDelta) {
                                 for (const tc of toolCallsDelta) {
@@ -902,29 +956,33 @@ ${contextData.interviews || "No interviews yet."}
                                     if (tc.function?.arguments) accumulatedToolCalls[index].function.arguments += tc.function.arguments;
                                 }
                             }
-
                         } catch (e) {
-                            // ignore parse errors
+                            // ignore processing errors for a single chunk
                         }
                     }
                 }
             }
+
             // Final flush
-            if (buffer.trim() && buffer.startsWith('data: ')) {
-                try {
-                    const dataStr = buffer.slice(6);
-                    if (dataStr !== '[DONE]') {
-                        const data = JSON.parse(dataStr);
-                        const contentDelta = data.choices?.[0]?.delta?.content;
-                        if (contentDelta) {
-                            fullText += contentDelta;
-                            await ctx.runMutation(api.aiChat.appendToMessage, {
-                                messageId,
-                                contentChunk: contentDelta
-                            });
-                        }
+            if (buffer.trim()) {
+                const trimmed = buffer.trim();
+                let data: any = null;
+                if (trimmed.startsWith('data: ') && trimmed !== 'data: [DONE]') {
+                    try { data = JSON.parse(trimmed.slice(6)); } catch (e) { }
+                } else if (trimmed.startsWith('{')) {
+                    try { data = JSON.parse(trimmed); } catch (e) { }
+                }
+
+                if (data) {
+                    const contentDelta = data.choices?.[0]?.delta?.content || data.message?.content;
+                    if (contentDelta) {
+                        fullText += contentDelta;
+                        await ctx.runMutation(api.aiChat.appendToMessage, {
+                            messageId,
+                            contentChunk: contentDelta
+                        });
                     }
-                } catch (e) { }
+                }
             }
 
             // Process Tool Calls
@@ -943,16 +1001,21 @@ ${contextData.interviews || "No interviews yet."}
                     const name = fc.function.name;
 
                     // Image Generation Logic (NVIDIA SDXL)
+                    // ... (Keeping existing image gen logic as is, assuming endpoint handles it or we refactor later if needed. For now, focus on chat)
                     if (name === 'generateImage') {
                         try {
-                            const imgUrl = `${API_BASE}/api/media/generate-image`;
+                            // Using API_BASE for image gen? 
+                            // API_BASE is removed. Need to use envEndpoint or logic.
+                            // Image Gen was using ${API_BASE}/api/media/generate-image
+                            // We should probably use the same base url.
+                            const endpointUrl = `${baseUrl}/api/media/generate-image`;
 
-                            // Enforce diversity and abstract style
+                            // ... Re-implement image gen fetch with new URL ...
                             const styleInstructions = " . Abstract, illustrative, artistic style. Diverse community representation if people are shown, but prefer abstract concepts. No specific individual leaders. High quality, modern design.";
                             const finalPrompt = data.prompt + styleInstructions;
 
-                            // 1. Call NVIDIA Proxy
-                            const imgResponse = await fetch(imgUrl, {
+                            // 1. Call API
+                            const imgResponse = await fetch(endpointUrl, {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({
@@ -963,7 +1026,6 @@ ${contextData.interviews || "No interviews yet."}
                                     height: 1024
                                 })
                             });
-
                             if (!imgResponse.ok) {
                                 throw new Error(`Image Gen Failed: ${imgResponse.statusText}`);
                             }
@@ -1001,16 +1063,13 @@ ${contextData.interviews || "No interviews yet."}
                                     url: publicUrl
                                 };
                             }
-
-                        } catch (err: any) {
+                        } catch (err) {
                             console.error("Image Generation Error:", err);
-                            // Fallback to placeholder if generation fails
                             const placeholderUrl = `https://placehold.co/1024x1024/7f1d1d/ffffff/png?text=Generation+Failed&font=playfair-display`;
                             data = { ...data, url: placeholderUrl };
                         }
                     }
 
-                    // Map specific function names to UI widget types
                     return {
                         type: name === 'renderTable' ? 'table' :
                             name === 'renderChart' ? 'chart' :
@@ -1053,7 +1112,7 @@ ${contextData.interviews || "No interviews yet."}
             }
 
         } catch (error: any) {
-            console.error("VentureAudit Error:", error);
+            console.error("AI Service Error:", error);
             await ctx.runMutation(api.aiChat.appendToMessage, {
                 messageId,
                 contentChunk: `\n\n*[System Error: Failed to connect to AI Analyst. ${error?.message || "Unknown error"}]*`

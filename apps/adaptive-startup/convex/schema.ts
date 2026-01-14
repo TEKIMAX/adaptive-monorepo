@@ -451,6 +451,7 @@ export default defineSchema({
       startupName: v.optional(v.string()),
       hypothesis: v.optional(v.string()),
       foundingYear: v.optional(v.string()),
+      aiInteractionStyle: v.optional(v.string()), // 'Strategist', 'Executive', 'Visionary'
     })),
     onboardingCompleted: v.optional(v.boolean()),
     stripeCustomerId: v.optional(v.string()), // Stripe Customer ID for billing portal

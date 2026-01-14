@@ -131,7 +131,7 @@ export const AIStrategyMemo: React.FC<AIStrategyMemoProps> = ({
                                             setIsMemoExpanded(true);
                                             if (!dailyMemo.isRead) markMemoAsRead({ memoId: dailyMemo._id });
                                         }}
-                                        className="px-4 py-1.5 bg-stone-800 border border-stone-700 rounded-full text-[10px] font-bold text-nobel-gold uppercase tracking-widest hover:bg-stone-700 transition-colors shadow-lg"
+                                        className="px-4 py-1.5 bg-black text-white rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-stone-800 transition-colors shadow-lg"
                                     >
                                         Read Full Strategic Memo
                                     </button>
