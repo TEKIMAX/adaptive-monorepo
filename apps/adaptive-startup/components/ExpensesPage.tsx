@@ -261,7 +261,7 @@ export const ExpensesPage: React.FC<ExpensesPageProps> = ({
                         )}
 
                         {/* List */}
-                        <div className="bg-white rounded-2xl border border-stone-200 shadow-sm overflow-hidden">
+                        <div className="bg-white rounded-2xl border border-stone-200 shadow-sm overflow-visible">
                             <table className="w-full">
                                 <thead className="bg-stone-50/80 backdrop-blur border-b border-stone-100">
                                     <tr>

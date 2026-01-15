@@ -54,27 +54,89 @@ export const getModelPricing = action({
         if (!identity) throw new Error("Unauthenticated");
 
         try {
-            const response = await fetch('https://api.tekimax.com/api/adaptive/model-pricing', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    provider: args.provider,
-                    query: args.query,
-                    limit: args.limit || 60,
-                    offset: args.offset || 0,
-                    requires_image_input: args.requires_image_input,
-                    requires_tool_call: args.requires_tool_call
-                })
+            const response = await fetch('https://models.dev/api.json');
+            if (!response.ok) {
+                throw new Error("Failed to fetch models from models.dev");
+            }
+            const data = await response.json();
+
+            // Flatten Models
+            const allModels: any[] = [];
+            Object.entries(data).forEach(([providerId, provider]: [string, any]) => {
+                if (provider.models) {
+                    Object.values(provider.models).forEach((model: any) => {
+                        allModels.push({
+                            ...model,
+                            provider_id: provider.id,
+                            provider_name: provider.name || provider.id
+                        });
+                    });
+                }
             });
 
-            if (!response.ok) {
-                throw new Error(`API returned ${response.status}: ${response.statusText}`);
-            }
+            // Filter
+            let filtered = allModels.filter(m => {
+                // Provider Filter
+                if (args.provider) {
+                    const p = args.provider.toLowerCase();
+                    if (!m.provider_name.toLowerCase().includes(p) && !m.provider_id.toLowerCase().includes(p)) {
+                        return false;
+                    }
+                }
 
-            const data = await response.json();
-            return data;
+                // Query Filter (Name)
+                if (args.query) {
+                    const q = args.query.toLowerCase();
+                    if (!m.name.toLowerCase().includes(q) && !m.id.toLowerCase().includes(q)) {
+                        return false;
+                    }
+                }
+
+                // Capability Filters
+                if (args.requires_image_input) {
+                    if (!m.modalities?.input?.includes('image')) return false;
+                }
+
+                return true;
+            });
+
+            // Sort (Alphabetical by Provider then Name)
+            filtered.sort((a, b) => {
+                if (a.provider_name < b.provider_name) return -1;
+                if (a.provider_name > b.provider_name) return 1;
+                return a.name.localeCompare(b.name);
+            });
+
+            const total_matched = filtered.length;
+
+            // Pagination
+            const limit = args.limit || 60;
+            const offset = args.offset || 0;
+            const paged = filtered.slice(offset, offset + limit);
+
+            // Map to Interface
+            const models = paged.map(m => ({
+                model_id: m.id,
+                name: m.name,
+                provider_name: m.provider_name,
+                // Cost is already in USD per 1M tokens (e.g. 0.5 for $0.50/1M)
+                cost_per_1m_input: (m.cost?.input || 0),
+                cost_per_1m_output: (m.cost?.output || 0),
+                context_window: m.limit?.context || m.limit?.max_tokens || 0,
+                capabilities: [
+                    ...(m.modalities?.input || []),
+                    ...(m.modalities?.output || [])
+                ].map((s: string) => s.toUpperCase())
+            }));
+
+            return {
+                models,
+                total_matched
+            };
+
         } catch (error: any) {
             console.error("Model Pricing API Error:", error);
+            // Fallback to empty if external API fails, or rethrow
             throw new Error(`Failed to fetch model pricing: ${error.message}`);
         }
     }

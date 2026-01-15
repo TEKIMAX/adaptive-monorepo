@@ -84,6 +84,9 @@ npx convex env set API_KEY "$API_KEY"
 npx convex env set PRICE_ID "$PRICE_ID"
 npx convex env set OLLAMA_BASE_URL "$OLLAMA_BASE_URL"
 npx convex env set OLLAMA_MODEL "$OLLAMA_MODEL"
+npx convex env set EXTERNAL_AI_KEY "$EXTERNAL_AI_KEY"
+npx convex env set CLOUDFLARE_ACCESS_ID "$CLOUDFLARE_ACCESS_ID"
+npx convex env set CLOUDFLARE_ACCESS_SECRET "$CLOUDFLARE_ACCESS_SECRET"
 
 echo -e "${GREEN}✅ Convex environment variables synced${NC}"
 

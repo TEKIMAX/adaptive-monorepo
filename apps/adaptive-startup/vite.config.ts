@@ -8,6 +8,20 @@ export default defineConfig(({ mode }) => {
     server: {
       port: 3000,
       host: '0.0.0.0',
+      proxy: {
+        '/stripe/events': {
+          target: 'https://hidden-gecko-710.convex.site',
+          changeOrigin: true,
+        },
+        '/workos-webhook': {
+          target: 'https://hidden-gecko-710.convex.site',
+          changeOrigin: true,
+        },
+        '/api': {
+          target: 'https://hidden-gecko-710.convex.site',
+          changeOrigin: true,
+        },
+      }
     },
     plugins: [react()],
     define: {

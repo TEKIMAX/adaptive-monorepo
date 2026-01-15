@@ -97,7 +97,7 @@ export const BlogPage: React.FC<BlogPageProps> = ({ onLogin, onNavigateHome, pro
                                 Topics
                             </h3>
                             <div className="flex flex-col gap-2">
-                                {categories.map((cat) => (
+                                {categories.map((cat: string) => (
                                     <button
                                         key={cat}
                                         onClick={() => setSelectedCategory(cat)}
@@ -153,7 +153,7 @@ export const BlogPage: React.FC<BlogPageProps> = ({ onLogin, onNavigateHome, pro
                                 : 'bg-white border-gray-200 text-gray-700'
                                 }`}
                         >
-                            {categories.map((cat) => (
+                            {categories.map((cat: string) => (
                                 <option key={cat} value={cat} className="text-black">
                                     {cat}
                                 </option>

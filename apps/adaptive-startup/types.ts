@@ -403,6 +403,10 @@ export interface StartupData {
     date: number;
     email?: string;
   };
+
+  // Stripe Connect
+  stripeAccountId?: string;
+  stripeData?: string;
 }
 
 export interface AISettings {

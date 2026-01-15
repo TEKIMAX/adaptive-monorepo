@@ -29,7 +29,15 @@ async function main() {
             unit_amount: 3500,
             currency: 'usd',
             recurring: { interval: 'month' },
-            nickname: 'Seat Add-on'
+            nickname: 'Seat Add-on (Monthly)'
+        });
+
+        const seatPriceYearly = await stripe.prices.create({
+            product: seatProd.id,
+            unit_amount: 37800, // $35 * 12 * 0.90 = $378
+            currency: 'usd',
+            recurring: { interval: 'year' },
+            nickname: 'Seat Add-on (Yearly)'
         });
 
 
@@ -46,6 +54,7 @@ async function main() {
             STRIPE_BASE_PRICE_ID: basePrice.id,
             STRIPE_YEARLY_PRICE_ID: yearlyPrice.id,
             STRIPE_SEAT_PRICE_ID: seatPrice.id,
+            STRIPE_SEAT_PRICE_ID_YEARLY: seatPriceYearly.id,
             STRIPE_TOKEN_PACK_PRICE_ID: tokenPrice.id
         }));
 

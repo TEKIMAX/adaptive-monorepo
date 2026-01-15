@@ -292,7 +292,7 @@ export const AppPageRouter: React.FC<PageRouterProps> = ({
                 <StartupJourney
                     data={currentProject}
                     {...commonProps}
-                    onUpdateProject={(updater) => {
+                    onUpdateProject={(updater: (project: StartupData) => StartupData) => {
                         updateCurrentProject(updater);
                         const role = currentUserRole;
                         const canEdit = role === 'Founder' || role === 'Admin';

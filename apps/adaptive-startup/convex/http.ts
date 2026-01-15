@@ -8,6 +8,19 @@ const http = httpRouter();
 registerRoutes(http, components.stripe, {
     webhookPath: "/stripe/events", // Keep consistency with what we told the user
     events: {
+        "account.application.authorized": async (ctx, event) => {
+            const account = event.data.object as any;
+            await ctx.runMutation(internal.stripe.updateConnectedAccountStatus, {
+                stripeAccountId: account.id || event.account, // Fallback to event.account if object is not full account
+                accountData: account
+            });
+        },
+        "account.application.deauthorized": async (ctx, event) => {
+            const stripeAccountId = event.account || (event.data.object as any).id;
+            if (stripeAccountId) {
+                await ctx.runMutation(internal.stripe.disconnectStripeAccount, { stripeAccountId });
+            }
+        },
         "account.updated": async (ctx, event) => {
             const account = event.data.object as any;
             await ctx.runMutation(internal.stripe.updateConnectedAccountStatus, {
@@ -255,6 +268,50 @@ http.route({
     }),
 });
 
+
+// ... (existing storage route)
+
+http.route({
+    path: "/api/ingest_usage",
+    method: "POST",
+    handler: httpAction(async (ctx, request) => {
+        const authHeader = request.headers.get("Authorization");
+        if (!authHeader || !authHeader.startsWith("Bearer ")) {
+            return new Response("Missing API Key", { status: 401 });
+        }
+        const apiKey = authHeader.split(" ")[1];
+
+        // Validate Key (Note: In prod, use a dedicated index or lookup function)
+        const keyRecord = await ctx.runQuery(internal.apiKeys.validate, { key: apiKey });
+        if (!keyRecord) {
+            return new Response("Invalid API Key", { status: 403 });
+        }
+
+        const body = await request.json();
+        const { userId, model, inputTokens, outputTokens, cost, metadata } = body;
+
+        // Basic Validation
+        if (!userId || !model || inputTokens === undefined || outputTokens === undefined) {
+            return new Response("Missing required fields", { status: 400 });
+        }
+
+        await ctx.runMutation(internal.externalUsage.log, {
+            projectId: keyRecord.projectId,
+            apiKeyId: keyRecord._id,
+            externalUserId: userId,
+            model,
+            inputTokens,
+            outputTokens,
+            cost,
+            metadata: metadata ? JSON.stringify(metadata) : undefined
+        });
+
+        return new Response(JSON.stringify({ success: true }), {
+            status: 200,
+            headers: { "Content-Type": "application/json" }
+        });
+    }),
+});
 
 import { getRssFeed } from "./blog_rss";
 

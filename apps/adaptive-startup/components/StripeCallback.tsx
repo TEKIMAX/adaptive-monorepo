@@ -9,9 +9,12 @@ const StripeCallback = () => {
     const [message, setMessage] = useState('Connecting your Stripe account...');
 
     const exchangeCode = useAction(api.stripe.exchangeConnectCode);
+    const hasExchanged = React.useRef(false);
 
     useEffect(() => {
         const handleCallback = async () => {
+            if (hasExchanged.current) return;
+
             const params = new URLSearchParams(window.location.search);
             const code = params.get('code');
             const state = params.get('state'); // This is the projectId
@@ -29,6 +32,8 @@ const StripeCallback = () => {
                 return;
             }
 
+            hasExchanged.current = true;
+
             try {
                 await exchangeCode({ code, projectId: state });
                 setStatus('success');
@@ -40,6 +45,7 @@ const StripeCallback = () => {
                 }, 2000);
             } catch (err: any) {
                 console.error("Stripe exchange error:", err);
+                hasExchanged.current = false; // Allow retry if failed
                 setStatus('error');
                 setMessage(`Failed to connect Stripe: ${err.message}`);
             }

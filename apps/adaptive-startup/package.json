@@ -19,8 +19,8 @@
     "@google/generative-ai": "^0.24.1",
     "@headlessui/react": "^2.2.9",
     "@radix-ui/themes": "^3.2.1",
-    "@stripe/connect-js": "^3.3.31",
-    "@stripe/react-connect-js": "^3.3.31",
+    "@stripe/connect-js": "^3.3.32",
+    "@stripe/react-connect-js": "^3.3.32",
     "@stripe/react-stripe-js": "^5.4.1",
     "@stripe/stripe-js": "^8.5.3",
     "@tanstack/react-query": "^5.90.12",
@@ -83,9 +83,9 @@
     "marked": "^17.0.1",
     "ollama": "^0.6.3",
     "pdfjs-dist": "^5.4.449",
-    "react": "^19.2.3",
+    "react": "^18.3.1",
     "react-confetti": "^6.4.0",
-    "react-dom": "^19.2.3",
+    "react-dom": "^18.3.1",
     "react-helmet-async": "^2.0.5",
     "react-markdown": "^10.1.0",
     "react-syntax-highlighter": "^16.1.0",
@@ -103,14 +103,20 @@
     "@babel/code-frame": "^7.27.1",
     "@babel/core": "^7.28.5",
     "@types/node": "^22.14.0",
-    "@types/react": "^19.2.7",
-    "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^5.0.0",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "^10.4.22",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.19",
     "typescript": "~5.8.2",
     "vite": "^6.2.0"
   },
-  "packageManager": "pnpm@10.25.0+sha512.5e82639027af37cf832061bcc6d639c219634488e0f2baebe785028a793de7b525ffcd3f7ff574f5e9860654e098fe852ba8ac5dd5cefe1767d23a020a92f501"
+  "packageManager": "pnpm@10.25.0+sha512.5e82639027af37cf832061bcc6d639c219634488e0f2baebe785028a793de7b525ffcd3f7ff574f5e9860654e098fe852ba8ac5dd5cefe1767d23a020a92f501",
+  "pnpm": {
+    "overrides": {
+      "@types/react": "^18.3.18",
+      "@types/react-dom": "^18.3.5"
+    }
+  }
 }

@@ -19,6 +19,7 @@ interface StartupJourneyProps {
     currentView: any;
     allowedPages?: string[];
     permissions?: RolePermissions;
+    onUpdateProject?: (updater: (project: StartupData) => StartupData) => void;
 }
 
 const StartupJourney: React.FC<StartupJourneyProps> = ({
@@ -26,6 +27,7 @@ const StartupJourney: React.FC<StartupJourneyProps> = ({
     onNavigate,
     currentView,
     allowedPages,
+    onUpdateProject,
 }) => {
     const updateProject = useMutation(api.projects.update);
     const createDoc = useMutation(api.documents.createDocument);
@@ -69,12 +71,16 @@ const StartupJourney: React.FC<StartupJourneyProps> = ({
                 setExpandedYear(year);
             }
 
-            await updateProject({
-                id: data.id as any,
-                updates: {
-                    milestones: updatedMilestones
-                }
-            });
+            if (onUpdateProject) {
+                onUpdateProject((prev) => ({ ...prev, milestones: updatedMilestones }));
+            } else {
+                await updateProject({
+                    id: data.id as any,
+                    updates: {
+                        milestones: updatedMilestones
+                    }
+                });
+            }
         } catch (error) {
             console.error("Failed to save milestone:", error);
             toast.error("Failed to save milestone");

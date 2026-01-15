@@ -226,9 +226,9 @@ export const handleWebhook = action({
             ) {
                 // No specific action needed?
             }
-        } catch (err) {
-            console.error(err);
-            throw new Error("Webhook Error");
+        } catch (err: any) {
+            console.error("WorkOS Webhook Failed:", err);
+            throw new Error(`Webhook Error: ${err.message || String(err)}`);
         }
 
         return { success: true };

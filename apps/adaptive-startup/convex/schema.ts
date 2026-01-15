@@ -798,6 +798,34 @@ export default defineSchema({
     createdAt: v.number(),
   }).index("by_initiative", ["initiativeId"]),
 
+  // 26. API Keys
+  api_keys: defineTable({
+    projectId: v.id("projects"),
+    orgId: v.string(),
+    name: v.string(),
+    key: v.string(), // Hashed API Key
+    preview: v.string(), // First/Last characters
+    scopes: v.array(v.string()), // e.g., ["usage:write"]
+    lastUsedAt: v.optional(v.number()),
+    createdAt: v.number(),
+    createdBy: v.string(), // User ID
+  })
+    .index("by_project", ["projectId"])
+    .index("by_key", ["key"]),
+
+  // 27. External usage logging
+  external_usage: defineTable({
+    projectId: v.id("projects"),
+    apiKeyId: v.id("api_keys"),
+    externalUserId: v.string(),
+    model: v.string(),
+    inputTokens: v.number(),
+    outputTokens: v.number(),
+    cost: v.optional(v.number()),
+    metadata: v.optional(v.string()), // JSON
+    timestamp: v.number(),
+  }).index("by_project_date", ["projectId", "timestamp"]),
+
   // 26. Human-AI Cooperation Reports
   cooperation_reports: defineTable({
     projectId: v.id("projects"),

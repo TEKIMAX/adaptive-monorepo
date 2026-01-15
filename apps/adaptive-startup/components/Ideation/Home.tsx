@@ -680,7 +680,7 @@ const LandingPage: React.FC<Props> = ({
                                     >
                                         All
                                     </button>
-                                    {allActiveCategories.map(cat => (
+                                    {allActiveCategories.map((cat: any) => (
                                         <button
                                             key={cat.id}
                                             onClick={() => setSelectedCategory(cat.id)}

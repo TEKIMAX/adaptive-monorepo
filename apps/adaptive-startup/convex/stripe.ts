@@ -476,6 +476,29 @@ export const updateConnectedAccountStatus = internalMutation({
     }
 });
 
+export const disconnectStripeAccount = internalMutation({
+    args: {
+        stripeAccountId: v.string()
+    },
+    handler: async (ctx, args) => {
+        const project = await ctx.db
+            .query("projects")
+            .filter(q => q.eq(q.field("stripeAccountId"), args.stripeAccountId))
+            .first();
+
+        if (project) {
+            await ctx.db.patch(project._id, {
+                stripeAccountId: undefined,
+                stripeConnectedAt: undefined,
+                stripeData: undefined
+            });
+            console.log(`Disconnected Stripe Account ${args.stripeAccountId} from Project ${project._id}`);
+        } else {
+            console.warn(`Received deauth for unknown account ${args.stripeAccountId}`);
+        }
+    }
+});
+
 export const getConnectedAccountData = action({
     args: { stripeAccountId: v.string() },
     handler: async (ctx, args) => {
@@ -600,5 +623,220 @@ export const processReferralPayment = action({
         } catch (e) {
             console.error("Error processing referral payment:", e);
         }
+    }
+});
+
+// --- CONNECTED ACCOUNT PRODUCT & INVOICE ACTIONS ---
+
+export const listConnectedProducts = action({
+    args: { stripeAccountId: v.string() },
+    handler: async (ctx, args) => {
+        const identity = await ctx.auth.getUserIdentity();
+        if (!identity) throw new Error("Not authenticated");
+
+        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!.trim(), { apiVersion: "2025-01-27.acacia" as any });
+
+        // 1. Fetch Products
+        const products = await stripe.products.list(
+            { limit: 20, active: true, expand: ['data.default_price'] },
+            { stripeAccount: args.stripeAccountId }
+        );
+
+        // 2. Fetch Payment Links
+        const paymentLinks = await stripe.paymentLinks.list(
+            { limit: 50, active: true, expand: ['data.line_items'] },
+            { stripeAccount: args.stripeAccountId }
+        );
+
+        // 3. Map Payment Links to Products
+        // This is a simplified matching strategy assuming 1 link per product for now
+        const productsWithLinks = products.data.map(product => {
+            const link = paymentLinks.data.find(pl => {
+                const lineItem = pl.line_items?.data[0];
+                // Check if price matches (if standard pricing) or product matches
+                return lineItem?.price?.product === product.id;
+            });
+            return {
+                ...product,
+                paymentLinkUrl: link?.url
+            };
+        });
+
+        return productsWithLinks;
+    }
+});
+
+export const createConnectedProduct = action({
+    args: {
+        stripeAccountId: v.string(),
+        name: v.string(),
+        description: v.optional(v.string()),
+        amount: v.number(), // in cents
+        imageUrl: v.optional(v.string())
+    },
+    handler: async (ctx, args) => {
+        const identity = await ctx.auth.getUserIdentity();
+        if (!identity) throw new Error("Not authenticated");
+
+        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!.trim(), { apiVersion: "2025-01-27.acacia" as any });
+
+        // 1. Create Product
+        const product = await stripe.products.create(
+            {
+                name: args.name,
+                description: args.description,
+                images: args.imageUrl ? [args.imageUrl] : undefined,
+                default_price_data: {
+                    currency: 'usd',
+                    unit_amount: args.amount,
+                }
+            },
+            { stripeAccount: args.stripeAccountId }
+        );
+
+        // 2. Create Payment Link
+        // We need the ID of the price we just created
+        const priceId = typeof product.default_price === 'string'
+            ? product.default_price
+            : product.default_price?.id;
+
+        if (!priceId) throw new Error("Failed to create price for product");
+
+        const paymentLink = await stripe.paymentLinks.create(
+            {
+                line_items: [{ price: priceId, quantity: 1 }]
+            },
+            { stripeAccount: args.stripeAccountId }
+        );
+
+        return { product, paymentLink };
+    }
+});
+
+export const archiveConnectedProduct = action({
+    args: {
+        stripeAccountId: v.string(),
+        productId: v.string()
+    },
+    handler: async (ctx, args) => {
+        const identity = await ctx.auth.getUserIdentity();
+        if (!identity) throw new Error("Not authenticated");
+
+        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!.trim(), { apiVersion: "2025-01-27.acacia" as any });
+
+        // Archive Product
+        await stripe.products.update(
+            args.productId,
+            { active: false },
+            { stripeAccount: args.stripeAccountId }
+        );
+
+        return { success: true };
+    }
+});
+
+export const listConnectedInvoices = action({
+    args: { stripeAccountId: v.string() },
+    handler: async (ctx, args) => {
+        const identity = await ctx.auth.getUserIdentity();
+        if (!identity) throw new Error("Not authenticated");
+
+        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!.trim(), { apiVersion: "2025-01-27.acacia" as any });
+
+        const invoices = await stripe.invoices.list(
+            { limit: 20, expand: ['data.customer'] },
+            { stripeAccount: args.stripeAccountId }
+        );
+
+        return invoices.data;
+    }
+});
+
+export const createConnectedInvoice = action({
+    args: {
+        stripeAccountId: v.string(),
+        customerName: v.string(),
+        customerEmail: v.string(),
+        amount: v.number(), // in cents
+        description: v.string(),
+    },
+    handler: async (ctx, args) => {
+        const identity = await ctx.auth.getUserIdentity();
+        if (!identity) throw new Error("Not authenticated");
+
+        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!.trim(), { apiVersion: "2025-01-27.acacia" as any });
+
+        // 1. Find or Create Customer on Connected Account
+        const customers = await stripe.customers.list(
+            { email: args.customerEmail, limit: 1 },
+            { stripeAccount: args.stripeAccountId }
+        );
+        let customerId = customers.data[0]?.id;
+
+        if (!customerId) {
+            const newCustomer = await stripe.customers.create(
+                { email: args.customerEmail, name: args.customerName },
+                { stripeAccount: args.stripeAccountId }
+            );
+            customerId = newCustomer.id;
+        }
+
+        // 2. Create Invoice Item (The line item)
+        await stripe.invoiceItems.create(
+            {
+                customer: customerId,
+                amount: args.amount,
+                currency: 'usd',
+                description: args.description,
+            },
+            { stripeAccount: args.stripeAccountId }
+        );
+
+        // 3. Create Draft Invoice
+        const invoice = await stripe.invoices.create(
+            {
+                customer: customerId,
+                auto_advance: false, // Draft
+                collection_method: 'send_invoice',
+                days_until_due: 30,
+            },
+            { stripeAccount: args.stripeAccountId }
+        );
+
+        return invoice;
+    }
+});
+
+export const deleteConnectedInvoice = action({
+    args: {
+        stripeAccountId: v.string(),
+        invoiceId: v.string()
+    },
+    handler: async (ctx, args) => {
+        const identity = await ctx.auth.getUserIdentity();
+        if (!identity) throw new Error("Not authenticated");
+
+        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!.trim(), { apiVersion: "2025-01-27.acacia" as any });
+
+        // Only draft invoices can be deleted. otherwise void.
+        // For simplicity we try to delete, if it fails we returns error
+        try {
+            await stripe.invoices.del(
+                args.invoiceId,
+                { stripeAccount: args.stripeAccountId }
+            );
+        } catch (e: any) {
+            // If delete fails (e.g. not draft), try to void
+            if (e.code === 'invoice_not_editable') {
+                await stripe.invoices.voidInvoice(
+                    args.invoiceId,
+                    { stripeAccount: args.stripeAccountId }
+                );
+            } else {
+                throw e;
+            }
+        }
+
+        return { success: true };
     }
 });

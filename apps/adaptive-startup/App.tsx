@@ -297,6 +297,11 @@ const App: React.FC = () => {
     return <ReferralRedeem />;
   }
 
+  // Handle Stripe Connect Callback (Authenticated or Unauthenticated)
+  if (window.location.pathname === '/stripe-callback') {
+    return <StripeCallback />;
+  }
+
   // --- UNAUTHENTICATED ---
   if (!user) {
     if (window.location.pathname === '/stripe-callback') {
