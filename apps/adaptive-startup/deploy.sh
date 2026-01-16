@@ -65,28 +65,40 @@ echo -e "${YELLOW}📦 Setting Convex environment variables...${NC}"
 export CONVEX_DEPLOYMENT=$CONVEX_DEPLOYMENT
 
 # Sync specific keys to Convex
-npx convex env set WORKOS_CLIENT_ID "$WORKOS_CLIENT_ID"
-npx convex env set WORKOS_API_KEY "$WORKOS_API_KEY"
-npx convex env set WORKOS_REDIRECT_URI "$WORKOS_REDIRECT_URI"
-npx convex env set WORKOS_WEBHOOK_SECRET "$WORKOS_WEBHOOK_SECRET"
-npx convex env set HOST_URL "$HOST_URL"
-npx convex env set GEMINI_API_KEY "$GEMINI_API_KEY"
-npx convex env set STRIPE_SECRET_KEY "$STRIPE_SECRET_KEY"
-npx convex env set STRIPE_WEBHOOK_SECRET "$STRIPE_WEBHOOK_SECRET"
-npx convex env set STRIPE_BASE_PRICE_ID "$STRIPE_BASE_PRICE_ID"
-npx convex env set STRIPE_YEARLY_PRICE_ID "$STRIPE_YEARLY_PRICE_ID"
-npx convex env set STRIPE_SEAT_PRICE_ID "$STRIPE_SEAT_PRICE_ID"
-npx convex env set STRIPE_SEAT_PRICE_ID_YEARLY "$STRIPE_SEAT_PRICE_ID_YEARLY"
-npx convex env set PIXABAY_API_KEY "$PIXABAY_API_KEY"
-npx convex env set STRIPE_CLIENT_ID "$STRIPE_CLIENT_ID"
-npx convex env set STRIPE_TOKEN_PACK_PRICE_ID "$STRIPE_TOKEN_PACK_PRICE_ID"
-npx convex env set API_KEY "$API_KEY"
-npx convex env set PRICE_ID "$PRICE_ID"
-npx convex env set OLLAMA_BASE_URL "$OLLAMA_BASE_URL"
-npx convex env set OLLAMA_MODEL "$OLLAMA_MODEL"
-npx convex env set EXTERNAL_AI_KEY "$EXTERNAL_AI_KEY"
-npx convex env set CLOUDFLARE_ACCESS_ID "$CLOUDFLARE_ACCESS_ID"
-npx convex env set CLOUDFLARE_ACCESS_SECRET "$CLOUDFLARE_ACCESS_SECRET"
+# Function to sync variable only if set
+sync_var() {
+    local key=$1
+    local value=$2
+    if [ -n "$value" ]; then
+        npx convex env set "$key" "$value"
+    else
+        echo -e "${YELLOW}⚠️  Skipping $key (not set locally)${NC}"
+    fi
+}
+
+# Sync specific keys to Convex
+sync_var "WORKOS_CLIENT_ID" "$WORKOS_CLIENT_ID"
+sync_var "WORKOS_API_KEY" "$WORKOS_API_KEY"
+sync_var "WORKOS_REDIRECT_URI" "$WORKOS_REDIRECT_URI"
+sync_var "WORKOS_WEBHOOK_SECRET" "$WORKOS_WEBHOOK_SECRET"
+sync_var "HOST_URL" "$HOST_URL"
+sync_var "GEMINI_API_KEY" "$GEMINI_API_KEY"
+sync_var "STRIPE_SECRET_KEY" "$STRIPE_SECRET_KEY"
+sync_var "STRIPE_WEBHOOK_SECRET" "$STRIPE_WEBHOOK_SECRET"
+sync_var "STRIPE_BASE_PRICE_ID" "$STRIPE_BASE_PRICE_ID"
+sync_var "STRIPE_YEARLY_PRICE_ID" "$STRIPE_YEARLY_PRICE_ID"
+sync_var "STRIPE_SEAT_PRICE_ID" "$STRIPE_SEAT_PRICE_ID"
+sync_var "STRIPE_SEAT_PRICE_ID_YEARLY" "$STRIPE_SEAT_PRICE_ID_YEARLY"
+sync_var "PIXABAY_API_KEY" "$PIXABAY_API_KEY"
+sync_var "STRIPE_CLIENT_ID" "$STRIPE_CLIENT_ID"
+sync_var "STRIPE_TOKEN_PACK_PRICE_ID" "$STRIPE_TOKEN_PACK_PRICE_ID"
+sync_var "API_KEY" "$API_KEY"
+sync_var "PRICE_ID" "$PRICE_ID"
+sync_var "OLLAMA_BASE_URL" "$OLLAMA_BASE_URL"
+sync_var "OLLAMA_MODEL" "$OLLAMA_MODEL"
+sync_var "EXTERNAL_AI_KEY" "$EXTERNAL_AI_KEY"
+sync_var "CLOUDFLARE_ACCESS_ID" "$CLOUDFLARE_ACCESS_ID"
+sync_var "CLOUDFLARE_ACCESS_SECRET" "$CLOUDFLARE_ACCESS_SECRET"
 
 echo -e "${GREEN}✅ Convex environment variables synced${NC}"
 

@@ -8,14 +8,14 @@ export const useDeleteCost = () => useMutation(api.revenue.deleteCost);
 export const useDeleteDocument = () => useMutation(api.documents.deleteDocument);
 export const useDeleteFile = () => useMutation(api.files.deleteFile);
 export const useDeleteFolder = () => useMutation(api.files.deleteFolder);
-export const useDeleteBlogPost = () => useMutation(api.blog.deletePost);
+
 export const useDeleteBlogCategory = () => useMutation(api.blog.deleteCategory);
 export const useDeleteFeature = () => useMutation(api.engineering.deleteFeature);
 export const useDeleteInitiative = () => useMutation(api.initiatives.deleteInitiative);
 export const useDeleteDivision = () => useMutation(api.initiatives.deleteDivision);
-export const useDeleteSafeTeamMember = () => useMutation(api.safe.deleteTeamMember);
+
 export const useDeleteArchitectureNode = () => useMutation(api.engineering.deleteArchitectureNode);
-export const useDeleteCompetitor = () => useMutation(api.manual_competitors.deleteManualCompetitor);
+
 export const useBulkDeleteCompetitors = () => useMutation(api.manual_competitors.bulkDeleteCompetitors);
 export const useDeleteIdeationWorkspace = () => useMutation(api.ideation.remove);
 export const useDeleteTeamMember = () => useMutation(api.team.deleteMember);

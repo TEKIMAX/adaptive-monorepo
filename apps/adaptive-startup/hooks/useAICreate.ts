@@ -17,18 +17,6 @@ export const useAIGenerateDailyMemo = () => useAction(api.ai.generateDailyMemo);
 /** Generates a comprehensive strategy summary for the startup */
 export const useAIGenerateStartupSummary = () => useAction(api.ai.generateStartupSummary);
 
-// Research & Analysis
-/** Generates a deep market research report and saves it to the project data */
-export const useAIGenerateMarketResearch = () => useAction(api.ai.generateMarketResearch);
-/** Performs a competitor analysis and updates the project state */
-export const useAIGenerateCompetitorAnalysis = () => useAction(api.ai.generateCompetitorAnalysis);
-/** Analyzes the revenue model and provides strategic feedback */
-export const useAIAnalyzeRevenueModel = () => useAction(api.ai.analyzeRevenueModel);
 
-// Collateral Generation
-/** Generates a full pitch deck based on project data */
-export const useAIGeneratePitchDeck = () => useAction(api.ai.generatePitchDeck);
 
-// Canvas & Strategy Suggestions
-/** Suggests content for a specific Business Model Canvas section */
-export const useAISuggestCanvasSection = () => useAction(api.ai.suggestCanvasSection);
+

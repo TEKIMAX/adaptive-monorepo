@@ -6,6 +6,7 @@ import Settings from './components/Settings';
 import { LandingPage } from './components/LandingPage';
 // import SubscriptionPage from './components/SubscriptionPage';
 import { BlogPage } from './pages/BlogPage';
+import { AiTestPage } from './pages/AiTestPage';
 import { BlogDetailPage } from './components/BlogDetailPage';
 import TermsOfService from './components/TermsOfService';
 import PrivacyPolicy from './components/PrivacyPolicy';
@@ -261,6 +262,11 @@ const App: React.FC = () => {
   // --- PUBLIC ROUTES ---
   if (window.location.pathname === '/blog') {
     return <BlogPage onLogin={signIn} onNavigateHome={() => window.location.href = '/'} />;
+  }
+
+  // --- AI TEST PAGE ---
+  if (window.location.pathname === '/ai-test') {
+    return <AiTestPage />;
   }
 
   const projectBlogMatch = window.location.pathname.match(/^\/p\/([\w-]+)\/blog$/);

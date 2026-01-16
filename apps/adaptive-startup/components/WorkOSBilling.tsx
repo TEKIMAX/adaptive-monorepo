@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { useQuery, useAction } from "convex/react";
 import { api } from "../convex/_generated/api";
-import { CreditCard, Zap, Users, BarChart, TrendingUp, Check, Plus, Minus, DollarSign } from 'lucide-react';
+import { CreditCard, Zap, Users, BarChart, TrendingUp, Check, Plus, Minus, DollarSign, Settings as SettingsIcon, ExternalLink } from 'lucide-react';
 
 export const WorkOSBilling = () => {
     const subscription = useQuery(api.usage.getSubscriptionStatus);
     const usageHistory = useQuery(api.usage.getUsage);
     const createCheckout = useAction(api.stripe.createSubscriptionCheckout);
     const buyTokens = useAction(api.stripe.buyTokens);
+    const createPortalSession = useAction(api.stripe.createBillingPortalSession);
 
     const [seats, setSeats] = useState(1);
     const [tokenPacks, setTokenPacks] = useState(1);
@@ -42,6 +43,19 @@ export const WorkOSBilling = () => {
             if (url) window.location.href = url;
         } catch (error) {
             console.error(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleManageSubscription = async () => {
+        setLoading(true);
+        try {
+            const url = await createPortalSession();
+            if (url) window.location.href = url;
+        } catch (error) {
+            console.error("Failed to create portal session:", error);
+            alert("Failed to open billing portal. Please try again.");
         } finally {
             setLoading(false);
         }
@@ -162,13 +176,24 @@ export const WorkOSBilling = () => {
                                     </button>
                                 </div>
 
-                                <button
-                                    onClick={handleSubscribe}
-                                    disabled={loading}
-                                    className="bg-stone-900 text-white font-bold px-8 py-3.5 rounded-xl hover:bg-stone-800 transition-all shadow-md active:scale-[0.98] disabled:opacity-50 whitespace-nowrap text-sm"
-                                >
-                                    {loading ? 'Processing...' : `Update Plan (${billingInterval === 'year' ? '$1,728/yr' : '$160/mo'})`}
-                                </button>
+                                <div className="flex gap-3">
+                                    {(subscription.status === 'active' || subscription.status === 'trialing') && (
+                                        <button
+                                            onClick={handleManageSubscription}
+                                            disabled={loading}
+                                            className="bg-white border border-stone-200 text-stone-600 font-bold px-4 py-3.5 rounded-xl hover:bg-stone-50 hover:text-stone-900 transition-all shadow-sm active:scale-[0.98] disabled:opacity-50 whitespace-nowrap text-sm flex items-center gap-2"
+                                        >
+                                            <SettingsIcon className="w-4 h-4" /> Manage Subscription
+                                        </button>
+                                    )}
+                                    <button
+                                        onClick={handleSubscribe}
+                                        disabled={loading}
+                                        className="bg-stone-900 text-white font-bold px-8 py-3.5 rounded-xl hover:bg-stone-800 transition-all shadow-md active:scale-[0.98] disabled:opacity-50 whitespace-nowrap text-sm flex-1"
+                                    >
+                                        {loading ? 'Processing...' : `Update Plan (${billingInterval === 'year' ? '$1,728/yr' : '$160/mo'})`}
+                                    </button>
+                                </div>
                             </div>
                         </div>
                         <div className="mt-4 flex justify-between text-[11px] text-stone-400 font-medium">
@@ -277,3 +302,4 @@ export const WorkOSBilling = () => {
         </div>
     );
 };
+

@@ -392,14 +392,18 @@ export const createAccountLink = action({
         const identity = await ctx.auth.getUserIdentity();
         if (!identity) throw new Error("Not authenticated");
 
+        const user = await ctx.runQuery(internal.users.getUserByToken, { tokenIdentifier: identity.subject });
+        if (!user || !user.isFounder) {
+            throw new Error("Access denied: Founder status required");
+        }
+
         const clientId = process.env.STRIPE_CLIENT_ID?.trim();
         if (!clientId) throw new Error("Missing STRIPE_CLIENT_ID");
 
         const state = args.projectId;
-        // Ensure this matches your Stripe Dashboard Redirect URI whitelist
-        const redirectUri = `${(process.env.HOST_URL || "http://localhost:5173").replace(/\/$/, "")}/stripe-callback`;
-
-        const url = `https://connect.stripe.com/oauth/authorize?response_type=code&client_id=${clientId}&scope=read_write&state=${state}&redirect_uri=${encodeURIComponent(redirectUri)}`;
+        // We rely on the Stripe Dashboard default Redirect URI configuration to avoid mismatch errors.
+        // Ensure you have configured the correct default URI for both Test mode (localhost) and Live mode.
+        const url = `https://connect.stripe.com/oauth/authorize?response_type=code&client_id=${clientId}&scope=read_write&state=${state}`;
         return { url };
     }
 });
@@ -409,6 +413,11 @@ export const exchangeConnectCode = action({
     handler: async (ctx, args) => {
         const identity = await ctx.auth.getUserIdentity();
         if (!identity) throw new Error("Not authenticated");
+
+        const user = await ctx.runQuery(internal.users.getUserByToken, { tokenIdentifier: identity.subject });
+        if (!user || !user.isFounder) {
+            throw new Error("Access denied: Founder status required");
+        }
 
         // Exchange code for token
         const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!.trim(), { apiVersion: "2025-01-27.acacia" as any });
@@ -434,6 +443,11 @@ export const createAccountSession = action({
     handler: async (ctx, args) => {
         const identity = await ctx.auth.getUserIdentity();
         if (!identity) throw new Error("Not authenticated");
+
+        const user = await ctx.runQuery(internal.users.getUserByToken, { tokenIdentifier: identity.subject });
+        if (!user || !user.isFounder) {
+            throw new Error("Access denied: Founder status required");
+        }
 
         const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!.trim(), { apiVersion: "2025-01-27.acacia" as any });
 
@@ -505,6 +519,11 @@ export const getConnectedAccountData = action({
         const identity = await ctx.auth.getUserIdentity();
         if (!identity) throw new Error("Not authenticated");
 
+        const user = await ctx.runQuery(internal.users.getUserByToken, { tokenIdentifier: identity.subject });
+        if (!user || !user.isFounder) {
+            throw new Error("Access denied: Founder status required");
+        }
+
         const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: "2025-01-27.acacia" as any });
 
         // Fetch Customers (Limit 20)
@@ -529,6 +548,11 @@ export const createConnectedLoginLink = action({
     handler: async (ctx, args) => {
         const identity = await ctx.auth.getUserIdentity();
         if (!identity) throw new Error("Not authenticated");
+
+        const user = await ctx.runQuery(internal.users.getUserByToken, { tokenIdentifier: identity.subject });
+        if (!user || !user.isFounder) {
+            throw new Error("Access denied: Founder status required");
+        }
 
         const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: "2025-01-27.acacia" as any });
 
@@ -634,6 +658,11 @@ export const listConnectedProducts = action({
         const identity = await ctx.auth.getUserIdentity();
         if (!identity) throw new Error("Not authenticated");
 
+        const user = await ctx.runQuery(internal.users.getUserByToken, { tokenIdentifier: identity.subject });
+        if (!user || !user.isFounder) {
+            throw new Error("Access denied: Founder status required");
+        }
+
         const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!.trim(), { apiVersion: "2025-01-27.acacia" as any });
 
         // 1. Fetch Products
@@ -677,6 +706,11 @@ export const createConnectedProduct = action({
     handler: async (ctx, args) => {
         const identity = await ctx.auth.getUserIdentity();
         if (!identity) throw new Error("Not authenticated");
+
+        const user = await ctx.runQuery(internal.users.getUserByToken, { tokenIdentifier: identity.subject });
+        if (!user || !user.isFounder) {
+            throw new Error("Access denied: Founder status required");
+        }
 
         const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!.trim(), { apiVersion: "2025-01-27.acacia" as any });
 
@@ -722,6 +756,11 @@ export const archiveConnectedProduct = action({
         const identity = await ctx.auth.getUserIdentity();
         if (!identity) throw new Error("Not authenticated");
 
+        const user = await ctx.runQuery(internal.users.getUserByToken, { tokenIdentifier: identity.subject });
+        if (!user || !user.isFounder) {
+            throw new Error("Access denied: Founder status required");
+        }
+
         const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!.trim(), { apiVersion: "2025-01-27.acacia" as any });
 
         // Archive Product
@@ -740,6 +779,11 @@ export const listConnectedInvoices = action({
     handler: async (ctx, args) => {
         const identity = await ctx.auth.getUserIdentity();
         if (!identity) throw new Error("Not authenticated");
+
+        const user = await ctx.runQuery(internal.users.getUserByToken, { tokenIdentifier: identity.subject });
+        if (!user || !user.isFounder) {
+            throw new Error("Access denied: Founder status required");
+        }
 
         const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!.trim(), { apiVersion: "2025-01-27.acacia" as any });
 
@@ -763,6 +807,11 @@ export const createConnectedInvoice = action({
     handler: async (ctx, args) => {
         const identity = await ctx.auth.getUserIdentity();
         if (!identity) throw new Error("Not authenticated");
+
+        const user = await ctx.runQuery(internal.users.getUserByToken, { tokenIdentifier: identity.subject });
+        if (!user || !user.isFounder) {
+            throw new Error("Access denied: Founder status required");
+        }
 
         const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!.trim(), { apiVersion: "2025-01-27.acacia" as any });
 
