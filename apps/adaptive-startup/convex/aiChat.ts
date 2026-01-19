@@ -5,212 +5,11 @@ import { api } from "./_generated/api";
 
 
 
-const tableTool = {
-    type: "function",
-    function: {
-        name: 'renderTable',
-        description: 'Renders a styled table with data.',
-        parameters: {
-            type: "object",
-            properties: {
-                columns: {
-                    type: "array",
-                    items: { type: "string" },
-                    description: 'Column names for the table'
-                },
-                rows: {
-                    type: "array",
-                    items: {
-                        type: "object",
-                        description: 'Object representing a row with column keys'
-                    }
-                }
-            },
-            required: ['columns', 'rows'],
-        },
-    }
-};
 
-const chartTool = {
-    type: "function",
-    function: {
-        name: 'renderChart',
-        description: 'Renders an interactive business chart.',
-        parameters: {
-            type: "object",
-            properties: {
-                type: {
-                    type: "string",
-                    description: 'Type of chart: bar, line, or pie'
-                },
-                data: {
-                    type: "array",
-                    items: { type: "object" },
-                    description: 'Data points for the chart'
-                },
-                title: { type: "string" },
-                xAxis: { type: "string" },
-                yAxis: { type: "string" }
-            },
-            required: ['type', 'data', 'title'],
-        },
-    }
-};
-
-const pitchDeckTool = {
-    type: "function",
-    function: {
-        name: 'renderPitchDeck',
-        description: 'Renders a slide-based pitch deck.',
-        parameters: {
-            type: "object",
-            properties: {
-                slides: {
-                    type: "array",
-                    items: {
-                        type: "object",
-                        properties: {
-                            title: { type: "string" },
-                            content: { type: "string" },
-                            points: { type: "array", items: { type: "string" } }
-                        },
-                        required: ['title', 'content']
-                    }
-                }
-            },
-            required: ['slides'],
-        },
-    }
-};
-
-const imageGenTool = {
-    type: "function",
-    function: {
-        name: 'generateImage',
-        description: 'Generates an image or logo based on a prompt.',
-        parameters: {
-            type: "object",
-            properties: {
-                prompt: { type: "string", description: 'Detailed visual description' },
-                isLogo: { type: "boolean", description: 'Whether the image is a logo design' }
-            },
-            required: ['prompt'],
-        },
-    }
-};
-
-const modelCanvasTool = {
-    type: "function",
-    function: {
-        name: 'renderModelCanvas',
-        description: 'Updates a section of the Lean Business Model Canvas with AI-generated strategies.',
-        parameters: {
-            type: "object",
-            properties: {
-                section: {
-                    type: "string",
-                    description: 'The canvas section to update (e.g., Problem, Solution, Unique Value Proposition, Customer Segments, Key Metrics, Channels, Cost Structure, Revenue Streams, Unfair Advantage)'
-                },
-                content: {
-                    type: "string",
-                    description: 'The strategy content in Markdown format'
-                }
-            },
-            required: ['section', 'content'],
-        },
-    }
-};
-
-const startupJourneyTool = {
-    type: "function",
-    function: {
-        name: 'updateStartupJourney',
-        description: 'Drafts a new milestone for the Startup Journey timeline.',
-        parameters: {
-            type: "object",
-            properties: {
-                title: { type: "string", description: 'Short title of the milestone (e.g. "Series A Funding", "First 100 Users")' },
-                date: { type: "string", description: 'Date of the event in YYYY-MM-DD format' },
-                type: { type: "string", description: 'Type of milestone: Launch, Funding, Pivot, Metric, Hiring, Product, Other' },
-                description: { type: "string", description: '1-2 sentence description of what happened.' },
-                tractionType: { type: "string", description: 'Status/Color: "Traction" (Green/Good), "Pivot" (Red/Bad/Change), "No Traction" (Neutral/Gray). Default to No Traction.' },
-                isFeatured: { type: "boolean", description: 'Whether this is a major "Star" event to feature' }
-            },
-            required: ['title', 'date', 'type', 'description']
-        }
-    }
-};
-
-const customerCardsTool = {
-    type: "function",
-    function: {
-        name: 'renderCustomerCards',
-        description: 'Renders a list of customer profiles or interview subjects as interactive cards.',
-        parameters: {
-            type: "object",
-            properties: {
-                customers: {
-                    type: "array",
-                    items: {
-                        type: "object",
-                        properties: {
-                            name: { type: "string" },
-                            role: { type: "string" },
-                            status: { type: "string", description: "Interview status e.g., 'Interviewed', 'Scheduled', 'No Traction', 'Potential Fit', 'Not Yet Closed'" },
-                            willingnessToPay: { type: "string", description: "Price point or 'No'" },
-                            notes: { type: "string" },
-                            videoUrl: { type: "string", description: "Optional URL to interview recording" },
-                            tags: { type: "array", items: { type: "string" } }
-                        },
-                        required: ['name', 'role', 'status']
-                    }
-                }
-            },
-            required: ['customers']
-        }
-    }
-};
-
-const financialSnapshotTool = {
-    type: "function",
-    function: {
-        name: 'renderFinancialSnapshot',
-        description: 'Renders a financial grid showing Unit Economics (CAC, LTV, ARPU) and a mini P&L summary.',
-        parameters: {
-            type: "object",
-            properties: {
-                cac: { type: "number", description: "Customer Acquisition Cost" },
-                ltv: { type: "number", description: "Lifetime Value" },
-                arpu: { type: "number", description: "Average Revenue Per User" },
-                revenue: { type: "string", description: "Projected Annual Revenue (e.g. '$1.2M')" },
-                burnRate: { type: "string", description: "Monthly Burn Rate (e.g. '$50k')" },
-                margin: { type: "string", description: "Groos Margin % (e.g. '75%')" }
-            },
-            required: ['cac', 'ltv', 'arpu', 'revenue', 'margin']
-        }
-    }
-};
-
-const swotAnalysisTool = {
-    type: "function",
-    function: {
-        name: 'renderSWOTAnalysis',
-        description: 'Renders a 2x2 SWOT grid (Strengths, Weaknesses, Opportunities, Threats) for comparing competitors.',
-        parameters: {
-            type: "object",
-            properties: {
-                strengths: { type: "array", items: { type: "string" }, description: "Internal positive factors" },
-                weaknesses: { type: "array", items: { type: "string" }, description: "Internal negative factors" },
-                opportunities: { type: "array", items: { type: "string" }, description: "External positive factors" },
-                threats: { type: "array", items: { type: "string" }, description: "External negative factors" },
-                competitorName: { type: "string", description: "Name of the entity being analyzed" }
-            },
-            required: ['strengths', 'weaknesses', 'opportunities', 'threats']
-        }
-    }
-};
-
-const ALL_TOOLS = [
+import {
+    UI_TOOLS,
+    geminiTools,
+    ROUTER_TOOL,
     tableTool,
     chartTool,
     pitchDeckTool,
@@ -220,161 +19,15 @@ const ALL_TOOLS = [
     customerCardsTool,
     financialSnapshotTool,
     swotAnalysisTool,
-    {
-        type: "function",
-        function: {
-            name: 'renderOKRCard',
-            description: 'Renders a goal tracking card with an Objective and Key Results (OKRs).',
-            parameters: {
-                type: "object",
-                properties: {
-                    objective: { type: "string", description: "The high-level objective statement" },
-                    timeline: { type: "string", description: "Time period (e.g., Q1 2024)" },
-                    status: { type: "string", description: "On Track, At Risk, Off Track" },
-                    progress: { type: "number", description: "Overall progress percentage (0-100)" },
-                    keyResults: {
-                        type: "array",
-                        items: {
-                            type: "object",
-                            properties: {
-                                label: { type: "string", description: "Key Result description" },
-                                target: { type: "string", description: "Target value" },
-                                current: { type: "string", description: "Current value" },
-                                status: { type: "string", description: "completed, in-progress, pending" }
-                            }
-                        }
-                    }
-                },
-                required: ['objective', 'keyResults']
-            }
-        }
-    },
-    {
-        type: "function",
-        function: {
-            name: 'renderMarketSizing',
-            description: 'Renders a TAM/SAM/SOM funnel visualization for market sizing.',
-            parameters: {
-                type: "object",
-                properties: {
-                    tam: { type: "string", description: "Total Addressable Market value (e.g. '$5B')" },
-                    sam: { type: "string", description: "Serviceable Available Market value" },
-                    som: { type: "string", description: "Serviceable Obtainable Market value" },
-                    tamDescription: { type: "string", description: "Description of the TAM scope" },
-                    samDescription: { type: "string", description: "Description of the SAM scope" },
-                    somDescription: { type: "string", description: "Description of the SOM scope" }
-                },
-                required: ['tam', 'sam', 'som']
-            }
-        }
-    },
-    {
-        type: "function",
-        function: {
-            name: 'renderLegalRiskAssessment',
-            description: 'Renders a risk assessment grid for legal documents or IP.',
-            parameters: {
-                type: "object",
-                properties: {
-                    overallRisk: { type: "string", description: "High, Medium, or Low" },
-                    summary: { type: "string" },
-                    risks: {
-                        type: "array",
-                        items: {
-                            type: "object",
-                            properties: {
-                                category: { type: "string", description: "e.g., IP, Compliance, Contract" },
-                                riskLevel: { type: "string", description: "High, Medium, Low" },
-                                description: { type: "string" },
-                                mitigation: { type: "string", description: "Suggested fix" }
-                            }
-                        }
-                    }
-                },
-                required: ['risks', 'overallRisk']
-            }
-        }
-    },
-    {
-        type: "function",
-        function: {
-            name: 'renderProcessFlow',
-            description: 'Renders a step-by-step process flow or operational workflow.',
-            parameters: {
-                type: "object",
-                properties: {
-                    title: { type: "string" },
-                    steps: {
-                        type: "array",
-                        items: {
-                            type: "object",
-                            properties: {
-                                stepNumber: { type: "number" },
-                                title: { type: "string" },
-                                description: { type: "string" }
-                            }
-                        }
-                    }
-                },
-                required: ['title', 'steps']
-            }
-        }
-    },
-    {
-        type: "function",
-        function: {
-            name: 'renderActionCard',
-            description: 'Renders a call-to-action card when data is missing, prompting the user to navigate to a specific page to add it.',
-            parameters: {
-                type: "object",
-                properties: {
-                    title: { type: "string", description: "Title of the action e.g., 'No Customers Found'" },
-                    description: { type: "string", description: "Explanation and instruction e.g., 'You haven't added any customer interviews yet. Go to the Customers page to log your first interview.'" },
-                    buttonLabel: { type: "string", description: "Label for the button e.g., 'Go to Customers'" },
-                    navigationTarget: { type: "string", description: "The page identifier to navigate to e.g., 'CUSTOMERS', 'MODEL_CANVAS', 'REVENUE'" }
-                },
-                required: ['title', 'description', 'buttonLabel', 'navigationTarget']
-            }
-        }
-    },
-    {
-        type: "function",
-        function: {
-            name: 'renderExpenseAnalysis',
-            description: 'Renders a financial analysis card showing total monthly burn, categorical breakdown, and top expenses.',
-            parameters: {
-                type: "object",
-                properties: {
-                    totalMonthly: { type: "number", description: "Total recurring monthly cost" },
-                    totalOneTime: { type: "number", description: "Total one-time costs" },
-                    categories: {
-                        type: "array",
-                        items: {
-                            type: "object",
-                            properties: {
-                                name: { type: "string" },
-                                amount: { type: "number" },
-                                percentage: { type: "number" }
-                            }
-                        }
-                    },
-                    topExpenses: {
-                        type: "array",
-                        items: {
-                            type: "object",
-                            properties: {
-                                name: { type: "string" },
-                                amount: { type: "number" }
-                            }
-                        }
-                    },
-                    summary: { type: "string", description: "Brief insight about the spending habits" }
-                },
-                required: ['totalMonthly', 'categories', 'topExpenses', 'summary']
-            }
-        }
-    }
-];
+    actionCardTool,
+    executionAuditTool
+} from "./aiModules/tools";
+import { getPersonaDirective, getChatSystemInstruction } from "./aiModules/prompts";
+
+// Backwards compatibility for existing code using ALL_TOOLS
+const ALL_TOOLS = UI_TOOLS;
+
+// --- END TOOL DEFINITIONS ---
 
 export const createChat = mutation({
     args: {
@@ -692,7 +345,7 @@ export const sendMessage = action({
         const user = await ctx.runQuery(api.users.getUser);
 
         // 0. CHECK LIMITS
-        const limit = await ctx.runQuery(api.usage.checkLimit);
+        const limit = await ctx.runQuery(api.usage.checkLimit, {});
         if (!limit.allowed) {
             // Throw a structured error string that the frontend can parse
             throw new Error(JSON.stringify({
@@ -753,79 +406,8 @@ ${contextData.interviews || "No interviews yet."}
 
         const interactionStyle = user?.onboardingData?.aiInteractionStyle || "Strategist";
 
-        let personaDirective = "";
-        if (interactionStyle === "Executive") {
-            personaDirective = `
-    PERSONA: THE EXECUTIVE.
-    - You are direct, concise, and result-oriented.
-    - Do NOT ask Socratic questions. Provide answers and action plans immediately.
-    - Focus on execution, speed, and ROI.
-    - Be brief. Bullet points are your friend.
-        `;
-        } else if (interactionStyle === "Visionary") {
-            personaDirective = `
-    PERSONA: THE VISIONARY.
-    - You are creative, expansive, and high-energy.
-    - Focus on "What if?" and "Why not?". Encourage big thinking.
-    - Suggest alternative business models and wild ideas.
-    - Do not be constrained by current feasibility.
-        `;
-        } else {
-            // Strategist (Default)
-            personaDirective = `
-    PERSONA: THE STRATEGIST (SOCRATIC).
-    - You are thoughtful, analytical, and probing.
-    - Use the Socratic Method: Guide the user to the answer with questions.
-    - Challenge assumptions and ensure rigorous logic.
-        `;
-        }
-
-        const systemInstruction = `You are a world-class Venture Consultant specialized in ${args.pageContext}. 
-    ${projectContextString}
-
-    ${personaDirective}
-
-    CRITICAL DIRECTIVES (Use Project Context as source of truth):
-    1. **Grounding**: Every response must be strictly grounded in the user's actual project data unless explicitly asked for external market data. Quote their own hypothesis or metrics back to them.
-    2. **Strategic Drift Monitor**: If the user's request contradicts their stated HYPOTHESIS, flag it immediately (e.g., "You mentioned X, but your hypothesis is Y. Is this a pivot?").
-    3. **Logical Gap Hunter**: Identify missing links (e.g., "You have a B2B revenue model but your customer segments are consumers. How do you bridge this?").
-    4. **Venture Audit**: Act as a proactive partner. Don't simply obey; audit the sanity of the request.
-
-    DATA PRESENTATION & TOOL USAGE:
-    You have access to a suite of specialized visualization tools. You MUST use them whenever applicable.
-    
-    **Available Tools:**
-    - **Financials**: Use 'renderFinancialSnapshot' for revenue/unit economics, and 'renderExpenseAnalysis' for burn rate and expense breakdown.
-    - **Strategy**: Use 'renderSWOTAnalysis' for competitive analysis and 'renderOKRCard' for goal setting/tracking.
-    - **Market**: Use 'renderMarketSizing' for TAM/SAM/SOM visualizations.
-    - **Legal**: Use 'renderLegalRiskAssessment' for IP and compliance risks.
-    - **Operations**: Use 'renderProcessFlow' for step-by-step workflows.
-    - **Customers**: Use 'renderCustomerCards' to display interview subjects.
-    - **Planning**: Use 'renderPitchDeck' for slides and 'renderModelCanvas' for business model updates.
-    - **Creative**: Use 'generateImage' for logos/visuals (Abstract/Diverse style enforced).
-    - **Data**: Use 'renderTable' and 'renderChart' for general structured data.
-
-    **Default Formatting Rule:**
-    If no specific tool applies, you MUST format your response using **Well-Structured Markdown**.
-    - Use **Bold Layers** for key metrics.
-    - Use '## Headers' for sections.
-    - Use '> Blockquotes' for insights.
-    - Use Bulleted Lists for readability.
-    
-    CRITICAL RULE - MISSING DATA and ACTION CARDS:
-    If the user asks to visualize data (e.g., "Show Market Sizing", "Render Revenue Model") and the data is NOT in the Context:
-    1.  NEVER ask the user to paste JSON or provide raw data.
-    2.  NEVER output a template JSON for them to fill out.
-    3.  ALWAYS use the 'renderActionCard' tool.
-    
-    Specific Examples:
-    - Missing Market Data -> Call renderActionCard with: title="Market Data Missing", description="You haven't defined your TAM/SAM/SOM yet.", buttonLabel="Go to Market Sizing", navigationTarget="MARKET_RESEARCH"
-    - Missing Revenue Data -> Call renderActionCard with: title="No Revenue Model", description="Set up your revenue assumptions to see the snapshot.", buttonLabel="Go to Financials", navigationTarget="REVENUE"
-    - Missing Customers -> Call renderActionCard with target="CUSTOMERS"
-    
-    Do not render the tool (e.g. renderMarketSizing) with empty/placeholder data. Use the Action Card instead.
-    
-    Always explain your reasoning in Markdown before or after showing visual components.`;
+        const personaDirective = getPersonaDirective(interactionStyle);
+        const systemInstruction = getChatSystemInstruction(args.pageContext, projectContextString, personaDirective);
 
         // Map history to OpenAI/NVIDIA format
         // history is: { role: 'user'|'model', parts: [{ text: string }] }[]
@@ -840,21 +422,60 @@ ${contextData.interviews || "No interviews yet."}
 
         try {
             // Define Endpoint
-            const envEndpoint = process.env.OLLAMA_ENDPOINT || "https://api.tekimax.com";
+            const envEndpoint = process.env.OLLAMA_BASE_URL || process.env.OLLAMA_ENDPOINT || "https://ollama.com";
             const baseUrl = envEndpoint.replace(/\/$/, '');
-            const targetUrl = `${baseUrl}/api/chat`;
 
-            const payload = {
-                model: "gemini-3-flash-preview:cloud",
-                messages: streamMessages,
-                stream: true,
-                temperature: 0.7,
-                top_p: 0.9,
-                max_tokens: 2048,
-                tools: ALL_TOOLS,
-                tool_choice: "auto",
-                chat_template_kwargs: { "enable_thinking": false }
-            };
+            // Remap logic
+            const envModel = process.env.OLLAMA_MODEL || "gemini-3-flash-preview:cloud";
+            let modelName = args.modelName || "cloud";
+
+            if (modelName === 'ollama' || modelName === 'cloud' || modelName === 'gemini-3-flash-preview' || modelName === 'ollama/gemini-3-flash-preview') {
+                modelName = envModel;
+            }
+
+            const isRustApi = envEndpoint.includes("workers.dev");
+            let targetUrl = `${baseUrl}/api/chat`;
+            if (isRustApi) {
+                targetUrl = `${baseUrl}/v1/responses`;
+            }
+
+            // --- Format Payload for Target API ---
+            let payload: any;
+
+            if (isRustApi) {
+                // Rust API expects InputItem format with 'input' field
+                const inputItems = streamMessages.map(msg => ({
+                    type: "message",
+                    role: msg.role,
+                    content: msg.content
+                }));
+
+                payload = {
+                    model: modelName,
+                    input: inputItems,
+                    stream: true,
+                    temperature: 0.7,
+                    max_output_tokens: 4096,
+                    tools: geminiTools, // Rust API uses Gemini tool format
+                    tool_choice: "auto",
+                    thinking: true,
+                    chat_template_kwargs: { "enable_thinking": true }
+                };
+            } else {
+                // Standard Ollama / Legacy Logic
+                payload = {
+                    model: modelName,
+                    messages: streamMessages,
+                    stream: true,
+                    temperature: 0.7,
+                    top_p: 0.9,
+                    max_tokens: 2048,
+                    tools: ROUTER_TOOL,
+                    tool_choice: "auto",
+                    thinking: true,
+                    chat_template_kwargs: { "enable_thinking": true }
+                };
+            }
 
             const response = await fetch(targetUrl, {
                 method: 'POST',
@@ -918,18 +539,31 @@ ${contextData.interviews || "No interviews yet."}
 
                     if (data) {
                         try {
-                            // Extract Content (Support OpenAI & Ollama formats)
+                            // Logic: Parse Thinking, Content, and Tool Calls
+
+                            // A. Thinking Delta
+                            // Support various formats:
+                            // 1. response.output_thinking.delta (Rust / OpenResponses)
+                            // 2. choices[0].delta.reasoning_content (DeepSeek / OpenAI)
+                            // 3. message.thinking (Ollama)
+                            let reasoningDelta = "";
+                            if (data.type === 'response.output_thinking.delta') {
+                                reasoningDelta = data.delta;
+                            } else {
+                                reasoningDelta =
+                                    data.choices?.[0]?.delta?.reasoning_content ||
+                                    data.message?.thinking ||
+                                    "";
+                            }
+
+                            // B. Content Delta
                             const contentDelta =
                                 data.choices?.[0]?.delta?.content ||
                                 data.message?.content ||
+                                (data.type === 'response.output_text.delta' ? data.delta : "") || // OpenResponses text delta
                                 "";
 
-                            // Extract Reasoning
-                            const reasoningDelta =
-                                data.choices?.[0]?.delta?.reasoning_content ||
-                                "";
-
-                            // Update DB
+                            // Update DB if we have text or thinking
                             if (contentDelta || reasoningDelta) {
                                 if (contentDelta) fullText += contentDelta;
                                 await ctx.runMutation(api.aiChat.appendToMessage, {
@@ -939,11 +573,16 @@ ${contextData.interviews || "No interviews yet."}
                                 });
                             }
 
-                            // Extract Tool Calls (OpenAI format usually)
-                            const toolCallsDelta = data.choices?.[0]?.delta?.tool_calls;
+                            // C. Tool Calls
+                            // Support OpenAI 'tool_calls' delta AND Rust 'response.output_item.added'
+                            const toolCallsDelta = data.choices?.[0]?.delta?.tool_calls ||
+                                data.tool_calls ||
+                                data.message?.tool_calls;
+
+                            // 1. OpenAI / Standard Format
                             if (toolCallsDelta) {
                                 for (const tc of toolCallsDelta) {
-                                    const index = tc.index;
+                                    const index = tc.index || 0;
                                     if (!accumulatedToolCalls[index]) {
                                         accumulatedToolCalls[index] = {
                                             id: tc.id || "",
@@ -956,6 +595,29 @@ ${contextData.interviews || "No interviews yet."}
                                     if (tc.function?.arguments) accumulatedToolCalls[index].function.arguments += tc.function.arguments;
                                 }
                             }
+
+                            // 2. Rust Worker Format (OpenResponses Item Added)
+                            if (data.type === 'response.output_item.added' && data.item?.object === 'tool_call') {
+                                const tc = data.item;
+                                // We treat this as a completed tool call (usually) or a start.
+                                // The worker emits the FULL tool call in 'item' usually for 'added' event?
+                                // Or it might be the start.
+                                // Based on previous debugging, 'item' contains the tool call definition.
+                                const index = 0; // Assuming single tool call for now or we map ID
+                                if (!accumulatedToolCalls[index]) {
+                                    accumulatedToolCalls[index] = {
+                                        id: tc.id || "call_" + Date.now(),
+                                        type: "function",
+                                        function: { name: tc.function.name, arguments: tc.function.arguments || "" }
+                                    };
+                                } else {
+                                    // If already exists, maybe append? But 'added' usually implies full item.
+                                    // We'll Overwrite/Append.
+                                    accumulatedToolCalls[index].function.name = tc.function.name;
+                                    accumulatedToolCalls[index].function.arguments = tc.function.arguments;
+                                }
+                            }
+
                         } catch (e) {
                             // ignore processing errors for a single chunk
                         }

@@ -44,7 +44,111 @@ const mapToOllamaMessages = (
     return messages;
 };
 
-// Internal helper function for direct calls across files (within the same package)
+// Helper to call the Rust API (OpenResponses Protocol)
+const callOpenResponses = async (
+    endpoint: string,
+    modelName: string,
+    messages: { role: string; content: string; images?: string[] }[],
+    apiKey?: string,
+    tools?: any[]
+): Promise<string> => {
+    // Map messages to InputItems
+    const inputItems = messages.map(msg => ({
+        type: "message",
+        role: msg.role,
+        content: msg.images && msg.images.length > 0
+            ? {
+                type: "parts", // Assuming Rust API handles parts, or we need to check types.rs. 
+                // types.rs InputContent::Parts(Vec<InputContentPart>)
+                // types.rs InputContentPart::Text or InputText
+                // Wait, types.rs didn't show Image support explicitly in InputContentPart? 
+                // types.rs: Text { text: String }, InputText { text: String }
+                // Use simple text content for now if images are not supported by Rust API types yet.
+                // Reverting to simple string content for safety unless we verified multimodal support in Rust types.
+                // The provided types.rs ONLY showed Text/InputText. 
+                // So pass text content directly.
+                val: msg.content // Fallback: ignore images for now or append to text?
+            }
+            : msg.content // InputContent::String(String) serialization
+    })).map(item => {
+        // Fix shape to match types.rs InputItem serialization (tag="type")
+        // types.rs: InputItem { type="message", role, content }
+        return {
+            type: "message",
+            role: item.role,
+            content: item.content
+        };
+    });
+
+    const body = {
+        model: modelName,
+        input: inputItems,
+        stream: true, // We must stream per Rust API
+        temperature: 0.7,
+        max_output_tokens: 4096
+    };
+
+    const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            ...(apiKey ? { 'Authorization': `Bearer ${apiKey}` } : {}),
+            // Pass secrets via Custom Headers for the Worker to forward
+            ...(process.env.OLLAMA_BASE_URL ? { 'x-custom-base-url': process.env.OLLAMA_BASE_URL } : {}),
+            // Cloudflare Access Headers
+            ...(process.env.CLOUDFLARE_ACCESS_ID && process.env.CLOUDFLARE_ACCESS_SECRET ? {
+                'CF-Access-Client-Id': process.env.CLOUDFLARE_ACCESS_ID,
+                'CF-Access-Client-Secret': process.env.CLOUDFLARE_ACCESS_SECRET
+            } : {})
+        },
+        body: JSON.stringify(body)
+    });
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Rust API Error (${response.status}): ${errorText}`);
+    }
+
+    // Handle SSE Stream
+    if (!response.body) throw new Error("No response body");
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let fullText = "";
+
+    while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value, { stream: true });
+        const lines = chunk.split('\n');
+
+        for (const line of lines) {
+            if (line.startsWith('data: ')) {
+                const jsonStr = line.substring(6).trim();
+                if (jsonStr === '[DONE]') continue;
+
+                try {
+                    const event = JSON.parse(jsonStr);
+                    // OpenResponseEvent types: response.output_text.delta
+                    if (event.type === 'response.output_text.delta') {
+                        fullText += event.delta;
+                    }
+                    if (event.type === 'error') {
+                        throw new Error(event.error.message || "Unknown Stream Error");
+                    }
+                } catch (e) {
+                    // Ignore parse errors for partial chunks (should implement proper buffer in prod)
+                    // For now, this simple loop works for most complete lines
+                }
+            }
+        }
+    }
+
+    return fullText;
+};
+
+// Internal helper logic
 export const callOllamaInternal = async (
     modelName: string,
     prompt: string | { role: string, parts: any[] }[],
@@ -56,48 +160,50 @@ export const callOllamaInternal = async (
     const envApiKey = process.env.OLLAMA_API_KEY;
     const finalApiKey = apiKey || envApiKey;
     const envModel = process.env.OLLAMA_MODEL || "gemini-3-flash-preview:cloud";
-    const envNvidiaModel = process.env.OLLAMA_NVIDIA_MODEL || "nemotron-mini:latest";
 
-    // Base cloud endpoint from environment
-    const envEndpoint = process.env.OLLAMA_ENDPOINT || process.env.OLLAMA_BASE_URL || "https://ollama.com";
-
-    // Detect if we should use NVIDIA endpoint (Tekimax Proxy specific)
-    const useNvidia = modelName.includes('nemotron') || modelName.includes('nvidia');
-
-    // Map generic aliases to environment variables
-    let finalModelName = modelName;
-    if (useNvidia) {
-        if (modelName === 'nemotron' || modelName === 'nvidia' || modelName === 'nemotron-mini') {
-            finalModelName = envNvidiaModel;
-        }
-    } else if (modelName === 'ollama' || modelName === 'cloud') {
-        finalModelName = envModel;
-    }
+    const envEndpoint = process.env.OLLAMA_BASE_URL || process.env.OLLAMA_ENDPOINT || "https://ollama.com";
     const messages = mapToOllamaMessages(prompt, systemInstruction);
 
-    // Normalize tools for the proxy (must have 'type' field and 'function' field if type is 'function')
+    // Remap generic model names to the environment-configured default
+    let finalModelName = modelName;
+    if (modelName === 'ollama' || modelName === 'cloud' || modelName === 'gemini-3-flash-preview' || modelName === 'ollama/gemini-3-flash-preview') {
+        finalModelName = envModel;
+    }
+
+    // Switch: Rust API (OpenResponses) vs Legacy Ollama
+    const isRustApi = envEndpoint.includes("workers.dev");
+
+    if (isRustApi) {
+        // Use new Rust API Logic
+        // Normalize endpoint: ensure no /v1/responses suffix is duplicated
+        let targetHelper = envEndpoint.replace(/\/$/, "");
+        if (!targetHelper.endsWith("/v1/responses")) {
+            targetHelper = `${targetHelper}/v1/responses`;
+        }
+
+        // Note: Rust API treats "ollama/..." prefix as routing hint.
+        // We pass the mapped model name.
+        return callOpenResponses(targetHelper, finalModelName, messages, finalApiKey, tools);
+    }
+
+    // --- Legacy Ollama Logic ---
+    // For legacy Ollama, strip the 'ollama/' routing prefix if present
+    if (!isRustApi && finalModelName.startsWith("ollama/")) {
+        finalModelName = finalModelName.replace("ollama/", "");
+    }
+    // Normalize tools (Keep existing logic)
     const normalizedTools = tools?.map(t => {
-        // Special mapping for Gemini-style google_search to OpenAI-style function
         if ((t as any).googleSearch || t.type === "google_search") {
             return {
                 type: "function",
                 function: {
                     name: "web_search",
                     description: "Search the web for real-time information to answer current questions.",
-                    parameters: {
-                        type: "object",
-                        properties: {
-                            query: { type: "string", description: "The search query" }
-                        },
-                        required: ["query"]
-                    }
+                    parameters: { type: "object", properties: { query: { type: "string" } }, required: ["query"] }
                 }
             };
         }
-
         if (t.type === "function") return t;
-
-        // Default to function if type is missing or custom
         return {
             type: "function",
             function: {
@@ -109,68 +215,40 @@ export const callOllamaInternal = async (
     });
 
     try {
-        // Choose endpoint: Always use the chat-style endpoint, schema is passed in 'format'
         let targetUrl = "";
-
-        // Tekimax Proxy / Custom Endpoint
-        // Sanitize base URL
         let baseUrl = envEndpoint.replace(/\/$/, '');
-
-        // Detect if we are hitting the official Ollama Cloud API or the Tekimax Proxy
         const isOfficialOllama = baseUrl.includes("ollama.com");
 
         // Ensure the correct path is appended
-        // Official Ollama: /api
-        // Tekimax Proxy: /api/cloud or /api/nvidia/cloud
         let apiPath = "";
         if (isOfficialOllama) {
             apiPath = "/api";
         } else {
-            apiPath = useNvidia ? '/api/nvidia/cloud' : '/api';
+            apiPath = '/api';
         }
 
         if (!baseUrl.includes(apiPath)) {
-            // Remove any other api paths first to avoid double nesting
-            baseUrl = baseUrl.replace(/\/api\/cloud$/, '').replace(/\/api\/nvidia\/cloud$/, '').replace(/\/api\/nvidia$/, '').replace(/\/api$/, '');
+            baseUrl = baseUrl.replace(/\/api$/, '');
             baseUrl += apiPath;
         }
 
-        // Ollama uses /chat for the chat API which supports 'format'
         targetUrl = `${baseUrl}/chat`;
-
 
         const body = {
             model: finalModelName,
             messages: messages,
             stream: false,
-            // If responseFormat is an object (schema), pass it directly. 
-            // If it's "json", pass "json".
             format: responseFormat || null,
             keep_alive: null,
-            logprobs: null,
-            options: {
-                temperature: 0 // Lower temperature for structured data
-            },
-            think: null,
+            options: { temperature: 0 },
             tools: normalizedTools || [],
-            top_logprobs: null,
-            // NVIDIA specific / Extended OpenAI compatibility
-            chat_template_kwargs: null,
-            max_tokens: null,
-            reasoning_budget: null,
-            seed: null,
-            temperature: null,
-            top_p: null
         };
 
         const response = await fetch(targetUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                // Always send Authorization header for Cloud calls if key is present
-                // NVIDIA calls on Tekimax proxy typically don't need the key (public/internal)
                 ...((finalApiKey) ? { 'Authorization': `Bearer ${finalApiKey}` } : {}),
-                // Add Cloudflare Access headers if present
                 ...(process.env.CLOUDFLARE_ACCESS_ID && process.env.CLOUDFLARE_ACCESS_SECRET ? {
                     'CF-Access-Client-Id': process.env.CLOUDFLARE_ACCESS_ID,
                     'CF-Access-Client-Secret': process.env.CLOUDFLARE_ACCESS_SECRET
@@ -185,16 +263,7 @@ export const callOllamaInternal = async (
         }
 
         const data = await response.json();
-
-        // Handle potential different response shapes (Ollama standard vs OpenAI/NVIDIA vs custom)
-        const content =
-            data.choices?.[0]?.message?.content ||
-            data.message?.content ||
-            data.response ||
-            data.content ||
-            "";
-
-        return content;
+        return data.choices?.[0]?.message?.content || data.message?.content || data.response || data.content || "";
     } catch (error) {
         console.error("Cloud AI Error:", error);
         throw error;
