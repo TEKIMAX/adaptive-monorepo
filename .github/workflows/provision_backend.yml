@@ -107,7 +107,7 @@ jobs:
           PLAN: ${{ github.event.client_payload.plan }}
         run: |
           echo "Notifying BRAIN Control Plane..."
-          curl -X POST "${{ secrets.BRAIN_CONVEX_URL }}/gha-callback" \
+          curl -X POST "${BRAIN_CONVEX_URL}/gha-callback" \
             -H "Content-Type: application/json" \
             -d "{\"email\": \"$EMAIL\", \"instanceUrl\": \"$INSTANCE_URL\", \"projectSlug\": \"$PROJECT_SLUG\", \"orgId\": \"$ORG_ID\", \"workosUserId\": \"$WORKOS_USER_ID\", \"plan\": \"$PLAN\"}"
 
