@@ -211,14 +211,17 @@ sequenceDiagram
 1. **Stripe Webhook** → Brain receives `customer.subscription.created`
 2. **User Creation** → Brain creates/updates user in database
 3. **GitHub Dispatch** → Brain triggers `provision_backend` workflow
-4. **Convex Provisioning** → Creates isolated Convex project
+4. **Convex Provisioning** → Creates isolated Convex project via Management API
 5. **WorkOS Setup** → Creates organization and user
-6. **Stripe Webhook** → Registers webhook endpoint for new instance
-7. **Cloudflare Setup** → Creates Pages project with environment variables
-8. **Configuration** → Sets Convex environment variables via API
-9. **Deployment** → Builds and deploys frontend to Cloudflare
-10. **Callback** → GitHub Actions notifies Brain with instance details
-11. **Registration** → Brain registers instance in user's record
+6. **Cloudflare Setup** → Creates Pages project with environment variables
+7. **Deploy Key Creation** → Generates deploy key via Convex Management API
+8. **Environment Variables** → Sets all required env vars via batch update API
+9. **Code Deployment** → Deploys Convex functions and schema to new instance
+10. **Frontend Build** → Builds and deploys React app to Cloudflare Pages
+11. **Callback** → GitHub Actions notifies Brain with instance details
+12. **Registration** → Brain registers instance in user's record
+
+**Note:** The Brain control plane has ONE Stripe webhook for all subscriptions. Individual instances do NOT have separate Stripe webhooks - all payment events flow through the Brain.
 
 ---
 
@@ -375,24 +378,6 @@ node scripts/setup_workos.cjs
 
 ---
 
-### `setup_stripe_webhooks.cjs`
-
-Registers a Stripe webhook endpoint for the new Convex instance.
-
-**Environment Variables:**
-- `STRIPE_SECRET_KEY` - Stripe secret key
-- `NEW_CONVEX_URL` - Target Convex deployment URL
-- `GH_EVENT_PAYLOAD` - GitHub event payload (JSON)
-
-**Outputs:**
-- `stripe_webhook_secret` - Webhook signing secret
-
-**Usage:**
-```bash
-node scripts/setup_stripe_webhooks.cjs
-```
-
----
 
 ### `setup_cloudflare.cjs`
 
@@ -430,22 +415,27 @@ Configures environment variables and deploys code to a newly provisioned Convex 
 - `PROJECT_ID` - Convex project ID (numeric)
 - `PROJECT_SLUG` - Project slug/name
 - `DEPLOYMENT_NAME` - Deployment name (e.g., `happy-animal-123`)
-- `STRIPE_WEBHOOK_SECRET` - Stripe webhook signing secret
+- `WORKOS_API_KEY` - WorkOS API key (required for code analysis)
 - `WORKOS_ORG_ID` - WorkOS organization ID
 - `WORKOS_CLIENT_ID` - WorkOS client ID
 - `GEMINI_API_KEY` - Gemini API key
 
 **Logic:**
-1. Creates a deploy key for the project via Convex Management API
-2. Sets environment variables on the deployment via API
-3. Deploys code using `npx convex deploy --prod` with the generated deploy key
+1. Creates a deploy key via `POST /v1/deployments/:name/create_deploy_key`
+2. Sets environment variables in batch via `POST https://:deployment.convex.cloud/api/v1/update_environment_variables`
+3. Deploys code using `npx convex deploy` (without `--prod` flag) with the generated deploy key
+
+**API Endpoints Used:**
+- Deploy Key: `https://api.convex.dev/v1/deployments/{deploymentName}/create_deploy_key`
+- Environment Variables: `https://{deploymentName}.convex.cloud/api/v1/update_environment_variables`
 
 **Usage:**
 ```bash
-node scripts/configure_and_deploy.cjs
+cd apps/adaptive-startup
+node ../adaptive-brain/scripts/configure_and_deploy.cjs
 ```
 
-**Note:** This script replaces manual `convex env set` commands and handles authentication using dynamically generated deploy keys.
+**Note:** This script replaces manual `convex env set` commands and handles authentication using dynamically generated deploy keys. The Convex CLI automatically detects prod vs preview based on the deploy key type.
 
 ---
 
@@ -476,6 +466,45 @@ BRAIN_CONVEX_URL=https://your-brain.convex.site node scripts/test_stripe_webhook
 - Verifying provisioning pipeline without requiring real Stripe payments
 - Debugging webhook processing and user data storage
 
+**Expected Result:**
+When successful, the complete provisioning flow takes approximately 2-3 minutes and creates:
+- New Convex project with deployed backend code
+- WorkOS organization and user
+- Cloudflare Pages deployment
+- User record in Brain with instance details
+
+---
+
+## Complete Provisioning Flow
+
+The end-to-end provisioning flow is fully automated and takes approximately 2-3 minutes:
+
+### Successful Flow Indicators
+
+✅ **Stripe Webhook Received** - Brain logs show event processed
+✅ **User Created** - User record created/updated in Brain database
+✅ **GitHub Actions Triggered** - Workflow run starts within 5 seconds
+✅ **Convex Backend Provisioned** - New project created via Management API
+✅ **WorkOS Setup Complete** - Organization and user created
+✅ **Cloudflare Project Created** - Pages project configured
+✅ **Backend Configured** - Deploy key generated, env vars set, code deployed
+✅ **Frontend Deployed** - React app built and deployed to Cloudflare
+✅ **Brain Notified** - Instance registered back to control plane
+
+### Monitoring Provisioning
+
+```bash
+# Trigger test payment
+node apps/adaptive-brain/scripts/test_stripe_webhook.cjs
+
+# Monitor GitHub Actions
+gh run list --repo TEKIMAX/adaptive-monorepo --workflow provision_backend.yml --limit 1
+gh run watch <run-id> --repo TEKIMAX/adaptive-monorepo
+
+# Check Brain database
+# Visit Convex dashboard to see user record and instance details
+```
+
 ---
 
 ## Environment Variables
@@ -505,12 +534,32 @@ GITHUB_OWNER=TEKIMAX
 GITHUB_REPO=adaptive-monorepo
 
 # Brain Control Plane
-CONVEX_SITE_URL=https://adaptive-brain.convex.cloud
+CONVEX_SITE_URL=https://outstanding-goldfinch-979.convex.site
+BRAIN_CONVEX_URL=https://outstanding-goldfinch-979.convex.site
+CONVEX_URL=https://outstanding-goldfinch-979.convex.cloud
+CONVEX_DEPLOYMENT=dev:outstanding-goldfinch-979
+
+# AI
+GEMINI_API_KEY=AIzaSy...
 ```
 
 ### GitHub Secrets (for Actions)
 
-All of the above variables must be configured as GitHub repository secrets for the provisioning workflow to function.
+All of the above variables must be configured as GitHub repository secrets in the **"Provisioning User Account"** environment for the provisioning workflow to function:
+
+**Required Secrets:**
+- `CONVEX_TEAM_ID` - Team ID for creating projects
+- `CONVEX_TEAM_ACCESS_TOKEN` - Team access token for Management API
+- `WORKOS_API_KEY` - Required for WorkOS operations and code analysis
+- `WORKOS_CLIENT_ID` - WorkOS client application ID
+- `STRIPE_SECRET_KEY` - Stripe API key for webhook verification
+- `CLOUDFLARE_API_TOKEN` - Cloudflare API token for Pages deployment
+- `CLOUDFLARE_ACCOUNT_ID` - Cloudflare account ID
+- `BRAIN_CONVEX_URL` - Brain control plane URL (e.g., `https://outstanding-goldfinch-979.convex.site`)
+- `BRAIN_DEPLOY_KEY` - Deploy key for Brain (optional, for direct mutations)
+- `GEMINI_API_KEY` - Gemini API key for AI features
+
+**Note:** The Brain webhook secret is stored in the Brain deployment's environment variables, not as a GitHub secret.
 
 ---
 
@@ -599,6 +648,35 @@ https://dashboard.convex.dev/t/<team>/adaptive-brain/logs
 
 ---
 
+## Recent Changes (January 2026)
+
+### Architecture Improvements
+
+**✅ Completed End-to-End Provisioning Flow**
+- Fixed Convex Management API integration (deploy keys + environment variables)
+- Removed per-instance Stripe webhooks (Brain has ONE webhook for all subscriptions)
+- Added proper authentication with deploy keys
+- Implemented batch environment variable updates
+- Fixed Convex CLI compatibility (removed deprecated `--prod` flag)
+
+**✅ Database Enhancements**
+- Added `stripeEvents` table for complete audit trail
+- Added `provisioningJobs` table for tracking provisioning status
+- Implemented event deduplication
+
+**✅ Improved Error Handling**
+- Better error messages during provisioning failures
+- Retry logic for WorkOS user creation
+- Proper validation of required environment variables
+
+### Testing Improvements
+
+- Created `test_stripe_webhook.cjs` for end-to-end testing
+- Added comprehensive troubleshooting documentation
+- Verified complete flow: Stripe → Brain → GitHub Actions → Deployed Instance
+
+---
+
 ## Future Enhancements
 
 - [ ] Add health check endpoints for provisioned instances
@@ -607,6 +685,8 @@ https://dashboard.convex.dev/t/<team>/adaptive-brain/logs
 - [ ] Implement instance backup and restore
 - [ ] Add usage metering and analytics
 - [ ] Support for instance migrations between regions
+- [ ] Add automatic cleanup of failed provisioning attempts
+- [ ] Implement provisioning job retries for transient failures
 
 ---
 
@@ -628,10 +708,47 @@ https://dashboard.convex.dev/t/<team>/adaptive-brain/logs
 
 **Symptom:** No provisioning triggered after subscription creation
 
-**Solution:** 
-1. Verify `STRIPE_WEBHOOK_SECRET` is set correctly
+**Solution:**
+1. Verify `STRIPE_WEBHOOK_SECRET` is set correctly in Brain deployment
 2. Check Stripe dashboard for webhook delivery logs
 3. Ensure `/stripe-webhook` endpoint is publicly accessible
+4. Brain should have ONE webhook, not per-instance webhooks
+
+### Deploy Key Creation Fails (404)
+
+**Symptom:** `Failed to create deploy key: 404`
+
+**Solution:** Use the correct API endpoint: `POST /v1/deployments/:deploymentName/create_deploy_key` (not `/api/projects/:projectId/deploy_keys`)
+
+### Environment Variables Not Set (404)
+
+**Symptom:** `Failed to set environment variables: 404`
+
+**Solution:** Use deployment-specific URL: `https://{deploymentName}.convex.cloud/api/v1/update_environment_variables` with `Convex` prefix in Authorization header
+
+### Convex Deploy Fails: "unknown option '--prod'"
+
+**Symptom:** `error: unknown option '--prod'`
+
+**Solution:** Remove the `--prod` flag. The Convex CLI automatically deploys to prod when using a prod deploy key.
+
+### Code Deployment Fails: "Missing API key"
+
+**Symptom:** `Uncaught Failed to analyze project_actions.js: Missing API key`
+
+**Solution:** Add `WORKOS_API_KEY` to the environment variables being set during configuration. This is required for Convex to analyze the code during deployment.
+
+### Brain Notification Fails: "URL rejected: Malformed input"
+
+**Symptom:** `curl: (3) URL rejected: Malformed input to a URL function`
+
+**Solution:** Ensure `BRAIN_CONVEX_URL` is set as a GitHub secret in the "Provisioning User Account" environment. Use `${BRAIN_CONVEX_URL}` instead of `${{ secrets.BRAIN_CONVEX_URL }}` in the curl command.
+
+### Stripe Webhook Limit Reached
+
+**Symptom:** `You have reached the maximum of 16 test webhook endpoints`
+
+**Solution:** This occurs during development testing. The correct architecture has ONE webhook pointing to Brain, not per-instance webhooks. Delete old test webhooks from Stripe dashboard, or use production mode for real deployments.
 
 ---
 
