@@ -23,7 +23,12 @@ async function main() {
         });
 
         console.log(`Created Stripe Webhook: ${webhookEndpoint.id}`);
-        console.log(`::set-output name=stripe_webhook_secret::${webhookEndpoint.secret}`);
+        if (process.env.GITHUB_OUTPUT) {
+            const fs = require('fs');
+            fs.appendFileSync(process.env.GITHUB_OUTPUT, `stripe_webhook_secret=${webhookEndpoint.secret}\n`);
+        } else {
+            console.log(`::set-output name=stripe_webhook_secret::${webhookEndpoint.secret}`);
+        }
 
     } catch (error) {
         console.error('Stripe Webhook Setup Failed:', error);

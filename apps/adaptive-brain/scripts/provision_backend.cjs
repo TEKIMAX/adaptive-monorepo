@@ -56,12 +56,14 @@ const main = async () => {
 
         console.log(`Project created. Deployment URL: ${deploymentUrl}`);
 
-        // Output the new URL for the next steps
-        console.log(`::set-output name=convex_url::${deploymentUrl}`);
-        // The API returns deploymentName or projectId, but usually we need a slug. 
-        // We'll use the deploymentName (e.g. astute-ibis-160) which often matches the slug.
-        const projectSlug = project.deploymentName || project.slug || projectName;
-        console.log(`::set-output name=convex_project_slug::${projectSlug}`);
+        if (process.env.GITHUB_OUTPUT) {
+            const fs = require('fs');
+            fs.appendFileSync(process.env.GITHUB_OUTPUT, `convex_url=${deploymentUrl}\n`);
+            fs.appendFileSync(process.env.GITHUB_OUTPUT, `convex_project_slug=${projectSlug}\n`);
+        } else {
+            console.log(`::set-output name=convex_url::${deploymentUrl}`);
+            console.log(`::set-output name=convex_project_slug::${projectSlug}`);
+        }
 
     } catch (error) {
         console.error("Convex provisioning failed:", error);

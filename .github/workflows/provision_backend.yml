@@ -11,9 +11,6 @@ jobs:
   provision:
     runs-on: ubuntu-latest
     environment: Provisioning User Account
-    defaults:
-      run:
-        working-directory: apps/adaptive-brain
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -24,7 +21,9 @@ jobs:
           node-version: '18'
 
       - name: Install dependencies
-        run: npm install
+        run: |
+          corepack enable
+          pnpm install --no-frozen-lockfile
 
       - name: Provision Convex Backend
         id: convex
@@ -33,7 +32,7 @@ jobs:
           CONVEX_TEAM_ACCESS_TOKEN: ${{ secrets.CONVEX_TEAM_ACCESS_TOKEN }}
           GH_EVENT_PAYLOAD: ${{ toJson(github.event) }}
         run: |
-          node scripts/provision_backend.cjs
+          node apps/adaptive-brain/scripts/provision_backend.cjs
           
       - name: Setup WorkOS
         id: workos
@@ -41,7 +40,7 @@ jobs:
           WORKOS_API_KEY: ${{ secrets.WORKOS_API_KEY }}
           GH_EVENT_PAYLOAD: ${{ toJson(github.event) }}
         run: |
-          node scripts/setup_workos.cjs
+          node apps/adaptive-brain/scripts/setup_workos.cjs
 
       - name: Setup Stripe Webhooks
         id: stripe
@@ -50,16 +49,19 @@ jobs:
           NEW_CONVEX_URL: ${{ steps.convex.outputs.convex_url }}
           GH_EVENT_PAYLOAD: ${{ toJson(github.event) }}
         run: |
-          node scripts/setup_stripe_webhooks.cjs
+          node apps/adaptive-brain/scripts/setup_stripe_webhooks.cjs
 
       - name: Setup Cloudflare Project
         id: cloudflare
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          VITE_CONVEX_URL: ${{ steps.convex.outputs.convex_url }}
+          VITE_WORKOS_ORG_ID: ${{ steps.workos.outputs.workos_org_id }}
+          VITE_WORKOS_CLIENT_ID: ${{ secrets.WORKOS_CLIENT_ID }}
           GH_EVENT_PAYLOAD: ${{ toJson(github.event) }}
         run: |
-          node scripts/setup_cloudflare.cjs
+          node apps/adaptive-brain/scripts/setup_cloudflare.cjs
 
       - name: Configure New Backend
         env:
@@ -77,6 +79,7 @@ jobs:
           npx convex env set GEMINI_API_KEY $GEMINI_API_KEY --project $PROJECT_SLUG --token $CONVEX_TEAM_ACCESS_TOKEN
           
           echo "Deploying initial schema and functions..."
+          cd apps/adaptive-startup
           npx convex deploy --project $PROJECT_SLUG --token $CONVEX_TEAM_ACCESS_TOKEN
 
       - name: Deploy to Cloudflare
@@ -89,10 +92,12 @@ jobs:
           VITE_WORKOS_CLIENT_ID: ${{ secrets.WORKOS_CLIENT_ID }}
         run: |
           echo "Building and deploying to Cloudflare Pages..."
-          export VITE_CONVEX_URL=$VITE_CONVEX_URL
-          export VITE_WORKOS_ORG_ID=$VITE_WORKOS_ORG_ID
-          export VITE_WORKOS_CLIENT_ID=$VITE_WORKOS_CLIENT_ID
+          # Build the startup app
+          pnpm --filter adaptive-startup build
           
+          # Deploy generated dist folder
+          npx wrangler pages deploy apps/adaptive-startup/dist --project-name $PROJECT_NAME --branch main
+
       - name: Notify BRAIN Backend
         env:
           BRAIN_CONVEX_URL: ${{ secrets.BRAIN_CONVEX_URL }}

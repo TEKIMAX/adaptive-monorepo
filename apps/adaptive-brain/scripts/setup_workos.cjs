@@ -33,8 +33,12 @@ async function main() {
 
         console.log(`Sent WorkOS Invitation: ${invitation.id} for Org: ${organization.id}`);
 
-        // 3. Output the orgId for next steps
-        console.log(`::set-output name=workos_org_id::${organization.id}`);
+        if (process.env.GITHUB_OUTPUT) {
+            const fs = require('fs');
+            fs.appendFileSync(process.env.GITHUB_OUTPUT, `workos_org_id=${organization.id}\n`);
+        } else {
+            console.log(`::set-output name=workos_org_id::${organization.id}`);
+        }
 
     } catch (error) {
         console.error('WorkOS Setup Failed:', error);
