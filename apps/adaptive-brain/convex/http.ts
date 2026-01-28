@@ -30,10 +30,23 @@ http.route({
             const customerEmail = subscription.customer_email || (event as any).data.object.email; // Fallback strategy
             const stripeCustomerId = subscription.customer;
 
+            // Extract metadata from subscription
+            const metadata = subscription.metadata || {};
+            const firstName = metadata.firstName || "";
+            const lastName = metadata.lastName || "";
+            const organizationName = metadata.organizationName || "";
+            const subdomainName = metadata.subdomainName || "";
+            const name = firstName && lastName ? `${firstName} ${lastName}` : (firstName || lastName || "");
+
             // 1. Get or Create User in BRAIN
             let userId = await ctx.runMutation(internal.users.getOrCreateUser, {
                 email: customerEmail || "",
                 stripeCustomerId,
+                name,
+                firstName,
+                lastName,
+                organizationName,
+                subdomainName,
             });
 
             // 2. Trigger Provisioning if it's a new sub
@@ -41,6 +54,11 @@ http.route({
                 await ctx.runAction(internal.provisioning.triggerProvisioning, {
                     userId: userId,
                     email: customerEmail || "",
+                    name,
+                    firstName,
+                    lastName,
+                    organizationName,
+                    subdomainName,
                     plan: "pro",
                     subscriptionId: subscription.id,
                 });
@@ -63,12 +81,14 @@ http.route({
     method: "POST",
     handler: httpAction(async (ctx, request) => {
         const body = await request.json();
-        const { email, instanceUrl, projectSlug, orgId, workosUserId, plan } = body;
+        const { email, instanceUrl, projectSlug, orgId, workosUserId, plan, subdomain, customDomain } = body;
 
         await ctx.runMutation(internal.provisioning.registerInstance, {
             email,
             instanceUrl,
             projectSlug,
+            subdomain,
+            customDomain,
             orgId,
             workosUserId,
             plan

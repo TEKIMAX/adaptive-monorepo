@@ -25,6 +25,10 @@ export const getOrCreateUser = internalMutation({
     args: {
         email: v.string(),
         name: v.optional(v.string()),
+        firstName: v.optional(v.string()),
+        lastName: v.optional(v.string()),
+        organizationName: v.optional(v.string()),
+        subdomainName: v.optional(v.string()),
         stripeCustomerId: v.optional(v.string()),
     },
     handler: async (ctx, args) => {
@@ -37,6 +41,10 @@ export const getOrCreateUser = internalMutation({
             await ctx.db.patch(existing._id, {
                 stripeCustomerId: args.stripeCustomerId || existing.stripeCustomerId,
                 name: args.name || existing.name,
+                firstName: args.firstName || existing.firstName,
+                lastName: args.lastName || existing.lastName,
+                organizationName: args.organizationName || existing.organizationName,
+                subdomainName: args.subdomainName || existing.subdomainName,
             });
             return existing._id;
         }
@@ -44,6 +52,10 @@ export const getOrCreateUser = internalMutation({
         return await ctx.db.insert("users", {
             email: args.email,
             name: args.name,
+            firstName: args.firstName,
+            lastName: args.lastName,
+            organizationName: args.organizationName,
+            subdomainName: args.subdomainName,
             stripeCustomerId: args.stripeCustomerId,
             subscriptionStatus: "active",
         });

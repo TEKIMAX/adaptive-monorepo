@@ -7,6 +7,10 @@ export const triggerProvisioning = internalAction({
         userId: v.string(),
         email: v.string(),
         name: v.optional(v.string()),
+        firstName: v.optional(v.string()),
+        lastName: v.optional(v.string()),
+        organizationName: v.optional(v.string()),
+        subdomainName: v.optional(v.string()),
         plan: v.string(),
         subscriptionId: v.string(),
     },
@@ -20,7 +24,7 @@ export const triggerProvisioning = internalAction({
             return;
         }
 
-        console.log(`BRAIN: Triggering provisioning for ${args.email}`);
+        console.log(`BRAIN: Triggering provisioning for ${args.email} (${args.subdomainName})`);
 
         const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/dispatches`, {
             method: "POST",
@@ -35,6 +39,10 @@ export const triggerProvisioning = internalAction({
                     userId: args.userId,
                     email: args.email,
                     name: args.name || "",
+                    firstName: args.firstName || "",
+                    lastName: args.lastName || "",
+                    organizationName: args.organizationName || "",
+                    subdomainName: args.subdomainName || "",
                     subscriptionId: args.subscriptionId,
                     plan: args.plan,
                     callbackUrl: process.env.CONVEX_SITE_URL, // So GHA can call home
@@ -54,6 +62,8 @@ export const registerInstance = internalMutation({
         email: v.string(),
         instanceUrl: v.string(),
         projectSlug: v.string(),
+        subdomain: v.optional(v.string()),
+        customDomain: v.optional(v.string()),
         orgId: v.optional(v.string()),
         workosUserId: v.optional(v.string()),
         plan: v.string(),
@@ -70,6 +80,8 @@ export const registerInstance = internalMutation({
         instances.push({
             instanceUrl: args.instanceUrl,
             projectSlug: args.projectSlug,
+            subdomain: args.subdomain,
+            customDomain: args.customDomain,
             orgId: args.orgId,
             workosUserId: args.workosUserId,
             plan: args.plan,
@@ -83,7 +95,7 @@ export const registerInstance = internalMutation({
             workosUserId: args.workosUserId || user.workosUserId
         });
 
-        console.log(`BRAIN: Registered instance for ${args.email} at ${args.instanceUrl}`);
+        console.log(`BRAIN: Registered instance for ${args.email} at ${args.customDomain || args.instanceUrl}`);
     }
 });
 
@@ -144,6 +156,10 @@ export const saveStripeEvent = internalMutation({
 export const createProvisioningJob = internalMutation({
     args: {
         email: v.string(),
+        firstName: v.optional(v.string()),
+        lastName: v.optional(v.string()),
+        organizationName: v.optional(v.string()),
+        subdomainName: v.optional(v.string()),
         userId: v.optional(v.string()),
         plan: v.string(),
         subscriptionId: v.optional(v.string()),
@@ -151,6 +167,10 @@ export const createProvisioningJob = internalMutation({
     handler: async (ctx, args) => {
         return await ctx.db.insert("provisioningJobs", {
             email: args.email,
+            firstName: args.firstName,
+            lastName: args.lastName,
+            organizationName: args.organizationName,
+            subdomainName: args.subdomainName,
             userId: args.userId,
             plan: args.plan,
             subscriptionId: args.subscriptionId,

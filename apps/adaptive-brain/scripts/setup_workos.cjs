@@ -9,14 +9,18 @@ async function main() {
 
     const email = clientPayload.email || "test@example.com";
     const name = clientPayload.name || "Test User";
+    const firstName = clientPayload.firstName || "";
+    const lastName = clientPayload.lastName || "";
+    const organizationName = clientPayload.organizationName || "";
+    const subdomainName = clientPayload.subdomainName || "";
     const userId = clientPayload.userId || `test-user-${Math.random().toString(36).slice(2, 7)}`;
 
     console.log(`Setting up WorkOS for ${email} (${name || 'No Name'})`);
     console.log('Client Payload:', JSON.stringify(clientPayload, null, 2));
 
     try {
-        // 1. Create Organization (Minimal first)
-        const orgName = name ? `${name}'s Startup` : `${email}'s Startup`;
+        // 1. Create Organization (Use organizationName if provided, otherwise fallback)
+        const orgName = organizationName || (name ? `${name}'s Startup` : `${email}'s Startup`);
         console.log(`Attempting to create organization: "${orgName}"`);
 
         const organization = await workos.organizations.createOrganization({

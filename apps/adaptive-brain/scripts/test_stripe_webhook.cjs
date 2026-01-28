@@ -31,6 +31,12 @@ const testEvent = {
             },
             current_period_start: Math.floor(Date.now() / 1000),
             current_period_end: Math.floor(Date.now() / 1000) + 2592000, // 30 days
+            metadata: {
+                firstName: 'John',
+                lastName: 'Doe',
+                organizationName: 'Acme Corp',
+                subdomainName: 'acme',
+            },
         },
     },
 };
