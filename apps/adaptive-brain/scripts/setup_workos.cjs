@@ -29,13 +29,23 @@ async function main() {
             workosUser = users[0];
             console.log(`Found existing WorkOS User: ${workosUser.id}`);
         } else {
-            workosUser = await workos.userManagement.createUser({
-                email,
-                firstName: name.split(' ')[0],
-                lastName: name.split(' ').slice(1).join(' '),
-                emailVerified: true,
-            });
-            console.log(`Created new WorkOS User: ${workosUser.id}`);
+            try {
+                workosUser = await workos.userManagement.createUser({
+                    email,
+                    emailVerified: true,
+                });
+                console.log(`Created new WorkOS User: ${workosUser.id}`);
+            } catch (createError) {
+                // If creation fails, try listing again in case of race condition
+                console.warn(`User creation failed, attempting to find existing user: ${createError.message}`);
+                const { data: retryUsers } = await workos.userManagement.listUsers({ email });
+                if (retryUsers.length > 0) {
+                    workosUser = retryUsers[0];
+                    console.log(`Found existing WorkOS User on retry: ${workosUser.id}`);
+                } else {
+                    throw createError;
+                }
+            }
         }
 
         // 3. Add User to Organization/Invitation
