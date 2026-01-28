@@ -46,7 +46,16 @@ const main = async () => {
         console.log(`Creating project: ${projectName}`);
 
         const project = await createConvexProject(teamId, projectName, token);
-        const deploymentUrl = project.production_deployment.url;
+        console.log("Project created. Full response:", JSON.stringify(project, null, 2));
+
+        // Attempt to find the deployment URL in various possible locations
+        const deploymentUrl = project.prodDeploymentUrl ||
+            (project.production_deployment && project.production_deployment.url) ||
+            project.url;
+
+        if (!deploymentUrl) {
+            throw new Error(`Could not find production deployment URL in API response: ${JSON.stringify(project)}`);
+        }
 
         console.log(`Project created. Deployment URL: ${deploymentUrl}`);
 
