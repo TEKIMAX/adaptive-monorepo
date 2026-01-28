@@ -12,12 +12,15 @@ async function main() {
     const userId = clientPayload.userId || `test-user-${Math.random().toString(36).slice(2, 7)}`;
 
     console.log(`Setting up WorkOS for ${email} (${name || 'No Name'})`);
+    console.log('Client Payload:', JSON.stringify(clientPayload, null, 2));
 
     try {
-        // 1. Create Organization
+        // 1. Create Organization (Minimal first)
+        const orgName = name ? `${name}'s Startup` : `${email}'s Startup`;
+        console.log(`Attempting to create organization: "${orgName}"`);
+
         const organization = await workos.organizations.createOrganization({
-            name: name ? `${name}'s Startup` : `${email}'s Startup`,
-            allowProfilesOutsideOrganization: true,
+            name: orgName,
         });
 
         console.log(`Created WorkOS Organization: ${organization.id}`);
