@@ -8,6 +8,9 @@ jobs:
   provision:
     runs-on: ubuntu-latest
     environment: Provisioning User Account
+    defaults:
+      run:
+        working-directory: apps/adaptive-startup
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -98,7 +101,7 @@ jobs:
           PLAN: ${{ github.event.client_payload.plan }}
         run: |
           echo "Notifying BRAIN Control Plane..."
-          curl -X POST "${{ secrets.BRAIN_SITE_URL }}/gha-callback" \
+          curl -X POST "${{ secrets.BRAIN_CONVEX_URL }}/gha-callback" \
             -H "Content-Type: application/json" \
             -d "{\"email\": \"$EMAIL\", \"instanceUrl\": \"$INSTANCE_URL\", \"projectSlug\": \"$PROJECT_SLUG\", \"orgId\": \"$ORG_ID\", \"plan\": \"$PLAN\"}"
 
