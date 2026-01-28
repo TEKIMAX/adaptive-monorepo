@@ -65,8 +65,7 @@ jobs:
 
       - name: Configure New Backend
         env:
-          CONVEX_DEPLOYMENT: prod:${{ steps.convex.outputs.convex_deployment_name }}
-          CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_TEAM_ACCESS_TOKEN }}
+          CONVEX_TEAM_ACCESS_TOKEN: ${{ secrets.CONVEX_TEAM_ACCESS_TOKEN }}
           PROJECT_SLUG: ${{ steps.convex.outputs.convex_project_slug }}
           DEPLOYMENT_NAME: ${{ steps.convex.outputs.convex_deployment_name }}
           CONVEX_URL: ${{ steps.convex.outputs.convex_url }}
@@ -75,17 +74,8 @@ jobs:
           WORKOS_CLIENT_ID: ${{ secrets.WORKOS_CLIENT_ID }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
-          echo "Configuring Convex deployment: $DEPLOYMENT_NAME"
           cd apps/adaptive-startup
-
-          echo "Setting environment variables on the new Convex project..."
-          npx convex env set STRIPE_WEBHOOK_SECRET "$STRIPE_WEBHOOK_SECRET" --prod
-          npx convex env set WORKOS_ORG_ID "$WORKOS_ORG_ID" --prod
-          npx convex env set WORKOS_CLIENT_ID "$WORKOS_CLIENT_ID" --prod
-          npx convex env set GEMINI_API_KEY "$GEMINI_API_KEY" --prod
-
-          echo "Deploying initial schema and functions..."
-          npx convex deploy --prod
+          node ../adaptive-brain/scripts/configure_and_deploy.cjs
 
       - name: Deploy to Cloudflare
         env:
