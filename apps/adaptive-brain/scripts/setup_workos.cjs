@@ -49,9 +49,11 @@ async function main() {
             const fs = require('fs');
             fs.appendFileSync(process.env.GITHUB_OUTPUT, `workos_org_id=${organization.id}\n`);
             fs.appendFileSync(process.env.GITHUB_OUTPUT, `workos_user_id=${workosUserId}\n`);
+            fs.appendFileSync(process.env.GITHUB_OUTPUT, `workos_org_name=${orgName}\n`);
         } else {
             console.log(`::set-output name=workos_org_id::${organization.id}`);
             console.log(`::set-output name=workos_user_id::${workosUserId}`);
+            console.log(`::set-output name=workos_org_name::${orgName}`);
         }
 
     } catch (error) {
