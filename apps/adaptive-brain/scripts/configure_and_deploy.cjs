@@ -80,7 +80,6 @@ async function main() {
     const teamToken = process.env.CONVEX_TEAM_ACCESS_TOKEN;
 
     const envVars = {
-        STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
         WORKOS_API_KEY: process.env.WORKOS_API_KEY,
         WORKOS_ORG_ID: process.env.WORKOS_ORG_ID,
         WORKOS_CLIENT_ID: process.env.WORKOS_CLIENT_ID,

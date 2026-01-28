@@ -42,15 +42,6 @@ jobs:
         run: |
           node apps/adaptive-brain/scripts/setup_workos.cjs
 
-      - name: Setup Stripe Webhooks
-        id: stripe
-        env:
-          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
-          NEW_CONVEX_URL: ${{ steps.convex.outputs.convex_url }}
-          GH_EVENT_PAYLOAD: ${{ toJson(github.event) }}
-        run: |
-          node apps/adaptive-brain/scripts/setup_stripe_webhooks.cjs
-
       - name: Setup Cloudflare Project
         id: cloudflare
         env:
@@ -70,7 +61,6 @@ jobs:
           PROJECT_SLUG: ${{ steps.convex.outputs.convex_project_slug }}
           DEPLOYMENT_NAME: ${{ steps.convex.outputs.convex_deployment_name }}
           CONVEX_URL: ${{ steps.convex.outputs.convex_url }}
-          STRIPE_WEBHOOK_SECRET: ${{ steps.stripe.outputs.stripe_webhook_secret }}
           WORKOS_API_KEY: ${{ secrets.WORKOS_API_KEY }}
           WORKOS_ORG_ID: ${{ steps.workos.outputs.workos_org_id }}
           WORKOS_CLIENT_ID: ${{ secrets.WORKOS_CLIENT_ID }}
