@@ -33,7 +33,7 @@ jobs:
           CONVEX_TEAM_ACCESS_TOKEN: ${{ secrets.CONVEX_TEAM_ACCESS_TOKEN }}
           GH_EVENT_PAYLOAD: ${{ toJson(github.event) }}
         run: |
-          node scripts/provision_backend.js
+          node scripts/provision_backend.cjs
           
       - name: Setup WorkOS
         id: workos
@@ -41,7 +41,7 @@ jobs:
           WORKOS_API_KEY: ${{ secrets.WORKOS_API_KEY }}
           GH_EVENT_PAYLOAD: ${{ toJson(github.event) }}
         run: |
-          node scripts/setup_workos.js
+          node scripts/setup_workos.cjs
 
       - name: Setup Stripe Webhooks
         id: stripe
@@ -50,7 +50,7 @@ jobs:
           NEW_CONVEX_URL: ${{ steps.convex.outputs.convex_url }}
           GH_EVENT_PAYLOAD: ${{ toJson(github.event) }}
         run: |
-          node scripts/setup_stripe_webhooks.js
+          node scripts/setup_stripe_webhooks.cjs
 
       - name: Setup Cloudflare Project
         id: cloudflare
@@ -59,7 +59,7 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           GH_EVENT_PAYLOAD: ${{ toJson(github.event) }}
         run: |
-          node scripts/setup_cloudflare.js
+          node scripts/setup_cloudflare.cjs
 
       - name: Configure New Backend
         env:
