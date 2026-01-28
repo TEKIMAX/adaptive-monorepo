@@ -55,6 +55,7 @@ export const registerInstance = internalMutation({
         instanceUrl: v.string(),
         projectSlug: v.string(),
         orgId: v.optional(v.string()),
+        workosUserId: v.optional(v.string()),
         plan: v.string(),
     },
     handler: async (ctx, args) => {
@@ -70,12 +71,17 @@ export const registerInstance = internalMutation({
             instanceUrl: args.instanceUrl,
             projectSlug: args.projectSlug,
             orgId: args.orgId,
+            workosUserId: args.workosUserId,
             plan: args.plan,
             status: "active",
             createdAt: Date.now(),
         });
 
-        await ctx.db.patch(user._id, { instances });
+        await ctx.db.patch(user._id, {
+            instances,
+            orgId: args.orgId || user.orgId,
+            workosUserId: args.workosUserId || user.workosUserId
+        });
 
         console.log(`BRAIN: Registered instance for ${args.email} at ${args.instanceUrl}`);
     }

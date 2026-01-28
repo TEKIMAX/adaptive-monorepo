@@ -22,13 +22,29 @@ async function main() {
 
         console.log(`Created WorkOS Organization: ${organization.id}`);
 
-        // 2. Create/Invite User as Admin
-        // We send an invitation that links the user to the new organization.
+        // 2. Get or Create User
+        const { data: users } = await workos.userManagement.listUsers({ email });
+        let workosUser;
+        if (users.length > 0) {
+            workosUser = users[0];
+            console.log(`Found existing WorkOS User: ${workosUser.id}`);
+        } else {
+            workosUser = await workos.userManagement.createUser({
+                email,
+                firstName: name.split(' ')[0],
+                lastName: name.split(' ').slice(1).join(' '),
+                emailVerified: true,
+            });
+            console.log(`Created new WorkOS User: ${workosUser.id}`);
+        }
+
+        // 3. Add User to Organization/Invitation
+        // We still send an invitation to ensure they can set a password if new, 
+        // but now we have their ID.
         const invitation = await workos.userManagement.sendInvitation({
             email: email,
             organizationId: organization.id,
             expiresInDays: 7,
-            // invitationUrl: process.env.VITE_APP_URL + '/accept-invite', // Optional: customize redirect
         });
 
         console.log(`Sent WorkOS Invitation: ${invitation.id} for Org: ${organization.id}`);
@@ -36,8 +52,10 @@ async function main() {
         if (process.env.GITHUB_OUTPUT) {
             const fs = require('fs');
             fs.appendFileSync(process.env.GITHUB_OUTPUT, `workos_org_id=${organization.id}\n`);
+            fs.appendFileSync(process.env.GITHUB_OUTPUT, `workos_user_id=${workosUser.id}\n`);
         } else {
             console.log(`::set-output name=workos_org_id::${organization.id}`);
+            console.log(`::set-output name=workos_user_id::${workosUser.id}`);
         }
 
     } catch (error) {

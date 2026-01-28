@@ -106,10 +106,11 @@ jobs:
           INSTANCE_URL: ${{ steps.convex.outputs.convex_url }}
           PROJECT_SLUG: ${{ steps.convex.outputs.convex_project_slug }}
           ORG_ID: ${{ steps.workos.outputs.workos_org_id }}
+          WORKOS_USER_ID: ${{ steps.workos.outputs.workos_user_id }}
           PLAN: ${{ github.event.client_payload.plan }}
         run: |
           echo "Notifying BRAIN Control Plane..."
           curl -X POST "${{ secrets.BRAIN_CONVEX_URL }}/gha-callback" \
             -H "Content-Type: application/json" \
-            -d "{\"email\": \"$EMAIL\", \"instanceUrl\": \"$INSTANCE_URL\", \"projectSlug\": \"$PROJECT_SLUG\", \"orgId\": \"$ORG_ID\", \"plan\": \"$PLAN\"}"
+            -d "{\"email\": \"$EMAIL\", \"instanceUrl\": \"$INSTANCE_URL\", \"projectSlug\": \"$PROJECT_SLUG\", \"orgId\": \"$ORG_ID\", \"workosUserId\": \"$WORKOS_USER_ID\", \"plan\": \"$PLAN\"}"
 

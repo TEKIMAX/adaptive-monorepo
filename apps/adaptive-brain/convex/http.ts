@@ -53,13 +53,14 @@ http.route({
     method: "POST",
     handler: httpAction(async (ctx, request) => {
         const body = await request.json();
-        const { email, instanceUrl, projectSlug, orgId, plan } = body;
+        const { email, instanceUrl, projectSlug, orgId, workosUserId, plan } = body;
 
         await ctx.runMutation(internal.provisioning.registerInstance, {
             email,
             instanceUrl,
             projectSlug,
             orgId,
+            workosUserId,
             plan
         });
 
