@@ -86,6 +86,7 @@ jobs:
           node apps/adaptive-brain/scripts/setup_dns.cjs
 
       - name: Configure New Backend
+        id: configure
         env:
           CONVEX_TEAM_ACCESS_TOKEN: ${{ secrets.CONVEX_TEAM_ACCESS_TOKEN }}
           PROJECT_ID: ${{ steps.convex.outputs.convex_project_id }}
@@ -95,7 +96,9 @@ jobs:
           WORKOS_API_KEY: ${{ secrets.WORKOS_API_KEY }}
           WORKOS_ORG_ID: ${{ steps.workos.outputs.workos_org_id }}
           WORKOS_CLIENT_ID: ${{ secrets.WORKOS_CLIENT_ID }}
+          WORKOS_ORG_NAME: ${{ steps.workos.outputs.workos_org_name }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          APP_CUSTOM_DOMAIN: ${{ steps.app_dns.outputs.app_custom_domain }}
         run: |
           cd apps/adaptive-startup
           node ../adaptive-brain/scripts/configure_and_deploy.cjs
@@ -108,8 +111,10 @@ jobs:
           VITE_CONVEX_URL: ${{ steps.convex.outputs.convex_url }}
           VITE_WORKOS_ORG_ID: ${{ steps.workos.outputs.workos_org_id }}
           VITE_WORKOS_CLIENT_ID: ${{ secrets.WORKOS_CLIENT_ID }}
+          VITE_WORKOS_REDIRECT_URI: ${{ steps.configure.outputs.workos_redirect_uri }}
         run: |
           echo "Building and deploying to Cloudflare Pages..."
+          echo "Redirect URI: $VITE_WORKOS_REDIRECT_URI"
           # Build the startup app
           pnpm --filter adaptive-startup build
           
@@ -122,7 +127,7 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_PROJECT_NAME: ${{ steps.cloudflare.outputs.cloudflare_project_name }}
-          ORGANIZATION_NAME: ${{ github.event.client_payload.organizationName }}
+          ORGANIZATION_NAME: ${{ steps.workos.outputs.workos_org_name }}
           GH_EVENT_PAYLOAD: ${{ toJson(github.event) }}
         run: |
           node apps/adaptive-brain/scripts/setup_app_dns.cjs
@@ -135,13 +140,16 @@ jobs:
           INSTANCE_URL: ${{ steps.convex.outputs.convex_url }}
           PROJECT_SLUG: ${{ steps.convex.outputs.convex_project_slug }}
           ORG_ID: ${{ steps.workos.outputs.workos_org_id }}
+          ORG_NAME: ${{ steps.workos.outputs.workos_org_name }}
           WORKOS_USER_ID: ${{ steps.workos.outputs.workos_user_id }}
           PLAN: ${{ github.event.client_payload.plan }}
           SUBDOMAIN: ${{ github.event.client_payload.subdomainName }}
           CUSTOM_DOMAIN: ${{ steps.dns.outputs.custom_domain }}
+          APP_CUSTOM_DOMAIN: ${{ steps.app_dns.outputs.app_custom_domain }}
+          WORKOS_REDIRECT_URI: ${{ steps.configure.outputs.workos_redirect_uri }}
         run: |
           echo "Notifying BRAIN Control Plane..."
           curl -X POST "${BRAIN_CONVEX_URL}/gha-callback" \
             -H "Content-Type: application/json" \
-            -d "{\"email\": \"$EMAIL\", \"instanceUrl\": \"$INSTANCE_URL\", \"projectSlug\": \"$PROJECT_SLUG\", \"orgId\": \"$ORG_ID\", \"workosUserId\": \"$WORKOS_USER_ID\", \"plan\": \"$PLAN\", \"subdomain\": \"$SUBDOMAIN\", \"customDomain\": \"$CUSTOM_DOMAIN\"}"
+            -d "{\"email\": \"$EMAIL\", \"instanceUrl\": \"$INSTANCE_URL\", \"projectSlug\": \"$PROJECT_SLUG\", \"orgId\": \"$ORG_ID\", \"orgName\": \"$ORG_NAME\", \"workosUserId\": \"$WORKOS_USER_ID\", \"plan\": \"$PLAN\", \"subdomain\": \"$SUBDOMAIN\", \"customDomain\": \"$CUSTOM_DOMAIN\", \"appCustomDomain\": \"$APP_CUSTOM_DOMAIN\", \"workosRedirectUri\": \"$WORKOS_REDIRECT_URI\"}"
 

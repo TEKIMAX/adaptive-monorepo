@@ -78,17 +78,25 @@ async function main() {
     const projectId = process.env.PROJECT_ID;
     const projectSlug = process.env.PROJECT_SLUG;
     const teamToken = process.env.CONVEX_TEAM_ACCESS_TOKEN;
+    const appCustomDomain = process.env.APP_CUSTOM_DOMAIN;
+
+    // Use custom domain for redirect URI, otherwise use deployment URL
+    const redirectUri = appCustomDomain 
+        ? `https://${appCustomDomain}/auth/callback`
+        : `https://${deploymentName}.convex.cloud/auth/callback`;
 
     const envVars = {
         WORKOS_API_KEY: process.env.WORKOS_API_KEY,
         WORKOS_ORG_ID: process.env.WORKOS_ORG_ID,
         WORKOS_CLIENT_ID: process.env.WORKOS_CLIENT_ID,
         GEMINI_API_KEY: process.env.GEMINI_API_KEY,
+        VITE_WORKOS_REDIRECT_URI: redirectUri,
     };
 
     console.log(`Configuring deployment: ${deploymentName}`);
     console.log(`Project ID: ${projectId}`);
     console.log(`Project Slug: ${projectSlug}`);
+    console.log(`Redirect URI: ${redirectUri}`);
 
     try {
         // Step 1: Create deploy key for the deployment
@@ -102,6 +110,11 @@ async function main() {
         // Step 3: Deploy code using the deploy key
         console.log('\n3. Deploying code...');
         await deployCode(deploymentName, deployKey);
+
+        // Output redirect URI for workflow
+        if (process.env.GITHUB_OUTPUT) {
+            fs.appendFileSync(process.env.GITHUB_OUTPUT, `workos_redirect_uri=${redirectUri}\n`);
+        }
 
         console.log('\n✅ Configuration and deployment complete!');
 
