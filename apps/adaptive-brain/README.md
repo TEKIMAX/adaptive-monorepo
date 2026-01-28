@@ -151,6 +151,34 @@ apps/adaptive-brain/
 | `status` | `string` | Instance status (`provisioning`, `active`, `suspended`) |
 | `createdAt` | `number` | Unix timestamp of creation |
 
+### `stripeEvents` Table
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `eventId` | `string` | Stripe event ID (indexed) |
+| `eventType` | `string` | Event type (e.g., `customer.subscription.created`) |
+| `customerId` | `string?` | Stripe customer ID (indexed) |
+| `customerEmail` | `string?` | Customer email address |
+| `subscriptionId` | `string?` | Stripe subscription ID |
+| `payload` | `any` | Full Stripe event payload |
+| `processedAt` | `number` | Unix timestamp when processed |
+
+### `provisioningJobs` Table
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `email` | `string` | User email (indexed) |
+| `userId` | `string?` | Internal user ID |
+| `plan` | `string` | Subscription plan |
+| `subscriptionId` | `string?` | Stripe subscription ID |
+| `status` | `string` | Job status: `pending`, `in_progress`, `completed`, `failed` (indexed) |
+| `githubRunId` | `string?` | GitHub Actions run ID |
+| `instanceUrl` | `string?` | Provisioned instance URL |
+| `projectSlug` | `string?` | Convex project slug |
+| `error` | `string?` | Error message if failed |
+| `createdAt` | `number` | Creation timestamp |
+| `updatedAt` | `number` | Last update timestamp |
+
 ---
 
 ## Provisioning Pipeline
@@ -260,6 +288,45 @@ Content-Type: application/json
 
 ---
 
+### `GET /user-data`
+
+Queries user information by email for GitHub Actions workflows.
+
+**Request:**
+```http
+GET /user-data?email=user@example.com
+```
+
+**Response:**
+```http
+200 OK
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "name": "John Doe",
+  "stripeCustomerId": "cus_xxx",
+  "subscriptionStatus": "pro",
+  "orgId": "org_01H...",
+  "workosUserId": "user_01H...",
+  "instances": [
+    {
+      "instanceUrl": "https://happy-animal-123.convex.cloud",
+      "projectSlug": "startup-abc123-4567",
+      "plan": "pro",
+      "status": "active",
+      "createdAt": 1234567890
+    }
+  ]
+}
+```
+
+**Use Case:**
+- GitHub Actions workflows can query user data to check provisioning status
+- Allows workflows to make decisions based on user's current state
+
+---
+
 ## Scripts
 
 ### `provision_backend.cjs`
@@ -351,6 +418,63 @@ Creates a Cloudflare Pages project and sets environment variables.
 ```bash
 node scripts/setup_cloudflare.cjs
 ```
+
+---
+
+### `configure_and_deploy.cjs`
+
+Configures environment variables and deploys code to a newly provisioned Convex project using the Management API.
+
+**Environment Variables:**
+- `CONVEX_TEAM_ACCESS_TOKEN` - Team access token
+- `PROJECT_ID` - Convex project ID (numeric)
+- `PROJECT_SLUG` - Project slug/name
+- `DEPLOYMENT_NAME` - Deployment name (e.g., `happy-animal-123`)
+- `STRIPE_WEBHOOK_SECRET` - Stripe webhook signing secret
+- `WORKOS_ORG_ID` - WorkOS organization ID
+- `WORKOS_CLIENT_ID` - WorkOS client ID
+- `GEMINI_API_KEY` - Gemini API key
+
+**Logic:**
+1. Creates a deploy key for the project via Convex Management API
+2. Sets environment variables on the deployment via API
+3. Deploys code using `npx convex deploy --prod` with the generated deploy key
+
+**Usage:**
+```bash
+node scripts/configure_and_deploy.cjs
+```
+
+**Note:** This script replaces manual `convex env set` commands and handles authentication using dynamically generated deploy keys.
+
+---
+
+### `test_stripe_webhook.cjs`
+
+Test script to simulate Stripe webhook events and verify the complete provisioning pipeline.
+
+**Environment Variables:**
+- `BRAIN_CONVEX_URL` - Brain control plane URL (defaults to production)
+
+**Logic:**
+1. Sends simulated `customer.subscription.created` event to Brain
+2. Waits for processing (3 seconds)
+3. Queries `/user-data` endpoint to verify user was created
+4. Displays next steps for monitoring GitHub Actions
+
+**Usage:**
+```bash
+# Test with default production URL
+node scripts/test_stripe_webhook.cjs
+
+# Test with custom Brain URL
+BRAIN_CONVEX_URL=https://your-brain.convex.site node scripts/test_stripe_webhook.cjs
+```
+
+**Use Case:**
+- End-to-end testing of Stripe webhook → Brain → GitHub Actions flow
+- Verifying provisioning pipeline without requiring real Stripe payments
+- Debugging webhook processing and user data storage
 
 ---
 

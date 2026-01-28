@@ -2,10 +2,10 @@
 const { execSync } = require('child_process');
 const fs = require('fs');
 
-async function createDeployKey(projectId, token) {
-    const url = `https://api.convex.dev/api/projects/${projectId}/deploy_keys`;
+async function createDeployKey(deploymentName, token) {
+    const url = `https://api.convex.dev/v1/deployments/${deploymentName}/create_deploy_key`;
 
-    console.log(`Creating deploy key for project ${projectId}...`);
+    console.log(`Creating deploy key for deployment ${deploymentName}...`);
 
     const response = await fetch(url, {
         method: 'POST',
@@ -14,7 +14,7 @@ async function createDeployKey(projectId, token) {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-            description: 'GitHub Actions CI/CD Deploy Key',
+            name: 'GitHub Actions CI/CD Deploy Key',
         }),
     });
 
@@ -90,9 +90,9 @@ async function main() {
     console.log(`Project Slug: ${projectSlug}`);
 
     try {
-        // Step 1: Create deploy key for the project
+        // Step 1: Create deploy key for the deployment
         console.log('\n1. Creating deploy key...');
-        const deployKey = await createDeployKey(projectId, teamToken);
+        const deployKey = await createDeployKey(deploymentName, teamToken);
 
         // Step 2: Set environment variables
         console.log('\n2. Setting environment variables...');
