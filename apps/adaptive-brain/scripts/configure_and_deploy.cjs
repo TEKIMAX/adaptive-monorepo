@@ -103,11 +103,6 @@ async function main() {
         console.log('\n3. Deploying code...');
         await deployCode(deploymentName, deployKey);
 
-        // Output redirect URI for workflow
-        if (process.env.GITHUB_OUTPUT) {
-            fs.appendFileSync(process.env.GITHUB_OUTPUT, `workos_redirect_uri=${redirectUri}\n`);
-        }
-
         console.log('\n✅ Configuration and deployment complete!');
     } catch (error) {
         console.error('\n❌ Configuration failed:', error);
