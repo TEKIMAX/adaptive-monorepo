@@ -56,7 +56,7 @@ async function deployCode(deploymentName, deployKey) {
     console.log('Deploying code to Convex...');
 
     try {
-        execSync(`npx convex deploy --prod`, {
+        execSync(`npx convex deploy`, {
             stdio: 'inherit',
             env: {
                 ...process.env,
