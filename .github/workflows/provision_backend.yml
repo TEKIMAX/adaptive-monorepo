@@ -67,20 +67,36 @@ jobs:
         env:
           CONVEX_TEAM_ACCESS_TOKEN: ${{ secrets.CONVEX_TEAM_ACCESS_TOKEN }}
           PROJECT_SLUG: ${{ steps.convex.outputs.convex_project_slug }}
+          DEPLOYMENT_NAME: ${{ steps.convex.outputs.convex_deployment_name }}
+          CONVEX_URL: ${{ steps.convex.outputs.convex_url }}
           STRIPE_WEBHOOK_SECRET: ${{ steps.stripe.outputs.stripe_webhook_secret }}
           WORKOS_ORG_ID: ${{ steps.workos.outputs.workos_org_id }}
           WORKOS_CLIENT_ID: ${{ secrets.WORKOS_CLIENT_ID }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
-          echo "Setting environment variables on the new Convex project..."
-          npx convex env set STRIPE_WEBHOOK_SECRET $STRIPE_WEBHOOK_SECRET --project $PROJECT_SLUG --token $CONVEX_TEAM_ACCESS_TOKEN
-          npx convex env set WORKOS_ORG_ID $WORKOS_ORG_ID --project $PROJECT_SLUG --token $CONVEX_TEAM_ACCESS_TOKEN
-          npx convex env set WORKOS_CLIENT_ID $WORKOS_CLIENT_ID --project $PROJECT_SLUG --token $CONVEX_TEAM_ACCESS_TOKEN
-          npx convex env set GEMINI_API_KEY $GEMINI_API_KEY --project $PROJECT_SLUG --token $CONVEX_TEAM_ACCESS_TOKEN
-          
-          echo "Deploying initial schema and functions..."
+          echo "Configuring Convex deployment: $DEPLOYMENT_NAME"
           cd apps/adaptive-startup
-          npx convex deploy --project $PROJECT_SLUG --token $CONVEX_TEAM_ACCESS_TOKEN
+
+          # Create .convex directory if it doesn't exist
+          mkdir -p .convex
+
+          # Configure the deployment
+          cat > .convex/deployment.json <<EOF
+          {
+            "deployment": "$DEPLOYMENT_NAME",
+            "team": "christian-kaman-ff7e5",
+            "project": "$PROJECT_SLUG"
+          }
+          EOF
+
+          echo "Setting environment variables on the new Convex project..."
+          npx convex env set STRIPE_WEBHOOK_SECRET "$STRIPE_WEBHOOK_SECRET" --prod --admin-key $CONVEX_TEAM_ACCESS_TOKEN
+          npx convex env set WORKOS_ORG_ID "$WORKOS_ORG_ID" --prod --admin-key $CONVEX_TEAM_ACCESS_TOKEN
+          npx convex env set WORKOS_CLIENT_ID "$WORKOS_CLIENT_ID" --prod --admin-key $CONVEX_TEAM_ACCESS_TOKEN
+          npx convex env set GEMINI_API_KEY "$GEMINI_API_KEY" --prod --admin-key $CONVEX_TEAM_ACCESS_TOKEN
+
+          echo "Deploying initial schema and functions..."
+          npx convex deploy --prod --admin-key $CONVEX_TEAM_ACCESS_TOKEN
 
       - name: Deploy to Cloudflare
         env:
