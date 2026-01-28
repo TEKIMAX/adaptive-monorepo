@@ -70,23 +70,12 @@ jobs:
           VITE_CONVEX_URL: ${{ steps.convex.outputs.convex_url }}
           VITE_WORKOS_ORG_ID: ${{ steps.workos.outputs.workos_org_id }}
           VITE_WORKOS_CLIENT_ID: ${{ secrets.WORKOS_CLIENT_ID }}
+          VITE_WORKOS_ORG_NAME: ${{ steps.workos.outputs.workos_org_name }}
           GH_EVENT_PAYLOAD: ${{ toJson(github.event) }}
         run: |
           node apps/adaptive-brain/scripts/setup_cloudflare.cjs
 
-      - name: Setup Custom DNS
-        id: dns
-        if: github.event_name == 'repository_dispatch' && github.event.client_payload.subdomainName != ''
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          CLOUDFLARE_PROJECT_NAME: ${{ steps.cloudflare.outputs.cloudflare_project_name }}
-          GH_EVENT_PAYLOAD: ${{ toJson(github.event) }}
-        run: |
-          node apps/adaptive-brain/scripts/setup_dns.cjs
-
       - name: Configure New Backend
-        id: configure
         env:
           CONVEX_TEAM_ACCESS_TOKEN: ${{ secrets.CONVEX_TEAM_ACCESS_TOKEN }}
           PROJECT_ID: ${{ steps.convex.outputs.convex_project_id }}
@@ -96,9 +85,8 @@ jobs:
           WORKOS_API_KEY: ${{ secrets.WORKOS_API_KEY }}
           WORKOS_ORG_ID: ${{ steps.workos.outputs.workos_org_id }}
           WORKOS_CLIENT_ID: ${{ secrets.WORKOS_CLIENT_ID }}
-          WORKOS_ORG_NAME: ${{ steps.workos.outputs.workos_org_name }}
+          WORKOS_REDIRECT_URI: ${{ steps.cloudflare.outputs.workos_redirect_uri }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          APP_CUSTOM_DOMAIN: ${{ steps.app_dns.outputs.app_custom_domain }}
         run: |
           cd apps/adaptive-startup
           node ../adaptive-brain/scripts/configure_and_deploy.cjs
@@ -111,7 +99,7 @@ jobs:
           VITE_CONVEX_URL: ${{ steps.convex.outputs.convex_url }}
           VITE_WORKOS_ORG_ID: ${{ steps.workos.outputs.workos_org_id }}
           VITE_WORKOS_CLIENT_ID: ${{ secrets.WORKOS_CLIENT_ID }}
-          VITE_WORKOS_REDIRECT_URI: ${{ steps.configure.outputs.workos_redirect_uri }}
+          VITE_WORKOS_REDIRECT_URI: ${{ steps.cloudflare.outputs.workos_redirect_uri }}
         run: |
           echo "Building and deploying to Cloudflare Pages..."
           echo "Redirect URI: $VITE_WORKOS_REDIRECT_URI"
@@ -120,17 +108,6 @@ jobs:
           
           # Deploy generated dist folder
           npx wrangler pages deploy apps/adaptive-startup/dist --project-name $PROJECT_NAME --branch main
-
-      - name: Setup DNS for Deployed App
-        id: app_dns
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          CLOUDFLARE_PROJECT_NAME: ${{ steps.cloudflare.outputs.cloudflare_project_name }}
-          ORGANIZATION_NAME: ${{ steps.workos.outputs.workos_org_name }}
-          GH_EVENT_PAYLOAD: ${{ toJson(github.event) }}
-        run: |
-          node apps/adaptive-brain/scripts/setup_app_dns.cjs
 
       - name: Notify BRAIN Backend
         env:
@@ -145,8 +122,8 @@ jobs:
           PLAN: ${{ github.event.client_payload.plan }}
           SUBDOMAIN: ${{ github.event.client_payload.subdomainName }}
           CUSTOM_DOMAIN: ${{ steps.dns.outputs.custom_domain }}
-          APP_CUSTOM_DOMAIN: ${{ steps.app_dns.outputs.app_custom_domain }}
-          WORKOS_REDIRECT_URI: ${{ steps.configure.outputs.workos_redirect_uri }}
+          APP_CUSTOM_DOMAIN: ${{ steps.cloudflare.outputs.app_custom_domain }}
+          WORKOS_REDIRECT_URI: ${{ steps.cloudflare.outputs.workos_redirect_uri }}
         run: |
           echo "Notifying BRAIN Control Plane..."
           curl -X POST "${BRAIN_CONVEX_URL}/gha-callback" \
