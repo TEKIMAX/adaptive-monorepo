@@ -22,50 +22,39 @@ async function main() {
 
         console.log(`Created WorkOS Organization: ${organization.id}`);
 
-        // 2. Get existing user or let invitation create them
-        // WorkOS automatically creates users when sending invitations
+        // 2. Check for existing user
+        // Note: We skip explicit user creation and invitations for now
+        // Users will be created when they first authenticate via WorkOS
         const { data: users } = await workos.userManagement.listUsers({ email });
-        let workosUser = users.length > 0 ? users[0] : null;
+        let workosUserId;
 
-        if (workosUser) {
-            console.log(`Found existing WorkOS User: ${workosUser.id}`);
+        if (users.length > 0) {
+            workosUserId = users[0].id;
+            console.log(`Found existing WorkOS User: ${workosUserId}`);
         } else {
-            console.log(`User will be created via invitation for: ${email}`);
-        }
-
-        // 3. Send invitation (this will create the user if they don't exist)
-        const invitation = await workos.userManagement.sendInvitation({
-            email: email,
-            organizationId: organization.id,
-            expiresInDays: 7,
-        });
-
-        console.log(`Sent WorkOS Invitation: ${invitation.id} for Org: ${organization.id}`);
-
-        // 4. Fetch the user again after invitation (they should exist now)
-        if (!workosUser) {
-            const { data: newUsers } = await workos.userManagement.listUsers({ email });
-            workosUser = newUsers.length > 0 ? newUsers[0] : null;
-            if (workosUser) {
-                console.log(`User created via invitation: ${workosUser.id}`);
-            } else {
-                console.warn(`Could not find user after invitation, using placeholder ID`);
-                // Use a placeholder - the user will be created when they accept the invitation
-                workosUser = { id: `pending-${email.replace('@', '-at-')}` };
-            }
+            // Use email-based identifier until user authenticates
+            workosUserId = `pending-${email.replace(/[@.]/g, '-')}`;
+            console.log(`No existing user found, will use placeholder: ${workosUserId}`);
+            console.log(`User will be created on first authentication to the organization`);
         }
 
         if (process.env.GITHUB_OUTPUT) {
             const fs = require('fs');
             fs.appendFileSync(process.env.GITHUB_OUTPUT, `workos_org_id=${organization.id}\n`);
-            fs.appendFileSync(process.env.GITHUB_OUTPUT, `workos_user_id=${workosUser.id}\n`);
+            fs.appendFileSync(process.env.GITHUB_OUTPUT, `workos_user_id=${workosUserId}\n`);
         } else {
             console.log(`::set-output name=workos_org_id::${organization.id}`);
-            console.log(`::set-output name=workos_user_id::${workosUser.id}`);
+            console.log(`::set-output name=workos_user_id::${workosUserId}`);
         }
 
     } catch (error) {
         console.error('WorkOS Setup Failed:', error);
+        if (error.response) {
+            console.error('Response data:', JSON.stringify(error.response.data, null, 2));
+        }
+        if (error.message) {
+            console.error('Error message:', error.message);
+        }
         process.exit(1);
     }
 }
