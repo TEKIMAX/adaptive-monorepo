@@ -4,7 +4,7 @@ const Stripe = require('stripe');
 async function main() {
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
     const payload = JSON.parse(process.env.GH_EVENT_PAYLOAD || '{}');
-    const clientPayload = payload.client_payload || {};
+    const clientPayload = payload.client_payload || payload.event?.client_payload || {};
     const convexUrl = process.env.NEW_CONVEX_URL;
 
     console.log(`Setting up Stripe Webhook for ${convexUrl}...`);

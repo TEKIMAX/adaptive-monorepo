@@ -4,8 +4,12 @@ const { WorkOS } = require('@workos-inc/node');
 const workos = new WorkOS(process.env.WORKOS_API_KEY);
 
 async function main() {
-    const payload = JSON.parse(process.env.GH_EVENT_PAYLOAD);
-    const { email, name, userId } = payload.client_payload;
+    const payload = JSON.parse(process.env.GH_EVENT_PAYLOAD || '{}');
+    const clientPayload = payload.client_payload || payload.event?.client_payload || {};
+
+    const email = clientPayload.email || "test@example.com";
+    const name = clientPayload.name || "Test User";
+    const userId = clientPayload.userId || `test-user-${Math.random().toString(36).slice(2, 7)}`;
 
     console.log(`Setting up WorkOS for ${email} (${name || 'No Name'})`);
 

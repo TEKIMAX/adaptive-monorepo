@@ -2,8 +2,10 @@
 const { execSync } = require('child_process');
 
 async function main() {
-    const payload = JSON.parse(process.env.GH_EVENT_PAYLOAD);
-    const userId = payload.client_payload.userId;
+    const payload = JSON.parse(process.env.GH_EVENT_PAYLOAD || '{}');
+    const clientPayload = payload.client_payload || payload.event?.client_payload || {};
+
+    const userId = clientPayload.userId || `test-user-${Math.random().toString(36).slice(2, 7)}`;
     const projectName = `startup-client-${userId.slice(-6)}-${Date.now().toString().slice(-4)}`;
 
     console.log(`Setting up Cloudflare Pages project: ${projectName}`);
