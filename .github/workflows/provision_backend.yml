@@ -6,6 +6,24 @@ on:
   repository_dispatch:
     types: [provision_backend]
   workflow_dispatch:
+    inputs:
+      email:
+        description: 'User email'
+        required: true
+        type: string
+      organizationName:
+        description: 'Organization name'
+        required: true
+        type: string
+      subdomainName:
+        description: 'Subdomain name'
+        required: false
+        type: string
+      plan:
+        description: 'Plan type'
+        required: true
+        type: string
+        default: 'free'
 
 jobs:
   provision:
