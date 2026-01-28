@@ -1,6 +1,8 @@
 name: Provision Backend
 
 on:
+  push:
+    branches: [main]
   repository_dispatch:
     types: [provision_backend]
   workflow_dispatch:
