@@ -151,7 +151,12 @@ const main = async () => {
     const payload = JSON.parse(process.env.GH_EVENT_PAYLOAD || '{}');
     const clientPayload = payload.client_payload || payload.event?.client_payload || {};
 
-    const organizationName = process.env.ORGANIZATION_NAME || clientPayload.organizationName;
+    // Try multiple sources for organization name
+    const envOrgName = process.env.ORGANIZATION_NAME;
+    const payloadOrgName = payload.repository?.owner?.login || payload.organization?.login;
+    const clientOrgName = clientPayload.organizationName;
+    
+    const organizationName = envOrgName || clientOrgName || payloadOrgName;
     const subdomainName = clientPayload.subdomainName;
     const projectName = process.env.CLOUDFLARE_PROJECT_NAME;
     const apiToken = process.env.CLOUDFLARE_API_TOKEN;
@@ -172,6 +177,9 @@ const main = async () => {
     
     if (!rawSubdomain) {
         console.error('Missing subdomainName or organizationName');
+        console.log('envOrgName:', envOrgName);
+        console.log('clientOrgName:', clientOrgName);
+        console.log('payloadOrgName:', payloadOrgName);
         process.exit(1);
     }
 
