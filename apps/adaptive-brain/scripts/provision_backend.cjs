@@ -48,6 +48,7 @@ const main = async () => {
         const project = await createConvexProject(teamId, projectName, token);
         console.log("Project created. Full response:", JSON.stringify(project, null, 2));
 
+        const projectId = project.id || project.projectId;
         const deploymentUrl = project.deploymentUrl;
         const deploymentName = project.deploymentName;
         const projectSlug = projectName; // The name acts as the slug
@@ -56,7 +57,12 @@ const main = async () => {
             throw new Error(`Could not find deploymentUrl in API response: ${JSON.stringify(project)}`);
         }
 
-        console.log(`Project created. Deployment URL: ${deploymentUrl}`);
+        if (!projectId) {
+            throw new Error(`Could not find project ID in API response: ${JSON.stringify(project)}`);
+        }
+
+        console.log(`Project created. Project ID: ${projectId}`);
+        console.log(`Deployment URL: ${deploymentUrl}`);
         console.log(`Deployment Name: ${deploymentName}`);
 
         if (process.env.GITHUB_OUTPUT) {
@@ -64,10 +70,12 @@ const main = async () => {
             fs.appendFileSync(process.env.GITHUB_OUTPUT, `convex_url=${deploymentUrl}\n`);
             fs.appendFileSync(process.env.GITHUB_OUTPUT, `convex_deployment_name=${deploymentName}\n`);
             fs.appendFileSync(process.env.GITHUB_OUTPUT, `convex_project_slug=${projectSlug}\n`);
+            fs.appendFileSync(process.env.GITHUB_OUTPUT, `convex_project_id=${projectId}\n`);
         } else {
             console.log(`::set-output name=convex_url::${deploymentUrl}`);
             console.log(`::set-output name=convex_deployment_name::${deploymentName}`);
             console.log(`::set-output name=convex_project_slug::${projectSlug}`);
+            console.log(`::set-output name=convex_project_id::${projectId}`);
         }
 
     } catch (error) {

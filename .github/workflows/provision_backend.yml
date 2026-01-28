@@ -66,6 +66,7 @@ jobs:
       - name: Configure New Backend
         env:
           CONVEX_TEAM_ACCESS_TOKEN: ${{ secrets.CONVEX_TEAM_ACCESS_TOKEN }}
+          PROJECT_ID: ${{ steps.convex.outputs.convex_project_id }}
           PROJECT_SLUG: ${{ steps.convex.outputs.convex_project_slug }}
           DEPLOYMENT_NAME: ${{ steps.convex.outputs.convex_deployment_name }}
           CONVEX_URL: ${{ steps.convex.outputs.convex_url }}

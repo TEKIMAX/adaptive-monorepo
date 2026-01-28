@@ -74,6 +74,7 @@ async function deployCode(deploymentName, deployKey) {
 
 async function main() {
     const deploymentName = process.env.DEPLOYMENT_NAME;
+    const projectId = process.env.PROJECT_ID;
     const projectSlug = process.env.PROJECT_SLUG;
     const teamToken = process.env.CONVEX_TEAM_ACCESS_TOKEN;
 
@@ -85,12 +86,13 @@ async function main() {
     };
 
     console.log(`Configuring deployment: ${deploymentName}`);
-    console.log(`Project: ${projectSlug}`);
+    console.log(`Project ID: ${projectId}`);
+    console.log(`Project Slug: ${projectSlug}`);
 
     try {
         // Step 1: Create deploy key for the project
         console.log('\n1. Creating deploy key...');
-        const deployKey = await createDeployKey(projectSlug, teamToken);
+        const deployKey = await createDeployKey(projectId, teamToken);
 
         // Step 2: Set environment variables
         console.log('\n2. Setting environment variables...');
