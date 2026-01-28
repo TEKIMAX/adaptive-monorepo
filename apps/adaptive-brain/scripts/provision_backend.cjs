@@ -49,19 +49,24 @@ const main = async () => {
         console.log("Project created. Full response:", JSON.stringify(project, null, 2));
 
         const deploymentUrl = project.deploymentUrl;
+        const deploymentName = project.deploymentName;
+        const projectSlug = projectName; // The name acts as the slug
 
         if (!deploymentUrl) {
             throw new Error(`Could not find deploymentUrl in API response: ${JSON.stringify(project)}`);
         }
 
         console.log(`Project created. Deployment URL: ${deploymentUrl}`);
+        console.log(`Deployment Name: ${deploymentName}`);
 
         if (process.env.GITHUB_OUTPUT) {
             const fs = require('fs');
             fs.appendFileSync(process.env.GITHUB_OUTPUT, `convex_url=${deploymentUrl}\n`);
+            fs.appendFileSync(process.env.GITHUB_OUTPUT, `convex_deployment_name=${deploymentName}\n`);
             fs.appendFileSync(process.env.GITHUB_OUTPUT, `convex_project_slug=${projectSlug}\n`);
         } else {
             console.log(`::set-output name=convex_url::${deploymentUrl}`);
+            console.log(`::set-output name=convex_deployment_name::${deploymentName}`);
             console.log(`::set-output name=convex_project_slug::${projectSlug}`);
         }
 
