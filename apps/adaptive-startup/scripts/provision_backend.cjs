@@ -21,8 +21,13 @@ async function createConvexProject(teamId, projectName, token) {
 }
 
 const main = async () => {
-    const payload = JSON.parse(process.env.GH_EVENT_PAYLOAD);
-    const { userId, email } = payload.client_payload;
+    const payload = JSON.parse(process.env.GH_EVENT_PAYLOAD || '{}');
+    // Handle both repository_dispatch (client_payload) and manual workflow_dispatch/push triggers
+    const clientPayload = payload.client_payload || payload.event?.client_payload || {};
+
+    const userId = clientPayload.userId || `test-user-${Math.random().toString(36).slice(2, 7)}`;
+    const email = clientPayload.email || "test@example.com";
+
     const teamId = process.env.CONVEX_TEAM_ID;
     const token = process.env.CONVEX_TEAM_ACCESS_TOKEN;
 

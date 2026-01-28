@@ -3,7 +3,8 @@ const Stripe = require('stripe');
 
 async function main() {
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-    const payload = JSON.parse(process.env.GH_EVENT_PAYLOAD);
+    const payload = JSON.parse(process.env.GH_EVENT_PAYLOAD || '{}');
+    const clientPayload = payload.client_payload || {};
     const convexUrl = process.env.NEW_CONVEX_URL;
 
     console.log(`Setting up Stripe Webhook for ${convexUrl}...`);
@@ -18,7 +19,7 @@ async function main() {
                 'customer.subscription.deleted',
                 'invoice.payment_succeeded'
             ],
-            description: `Webhook for ${payload.client_payload.email}`,
+            description: `Webhook for ${clientPayload.email || 'manual-test'}`,
         });
 
         console.log(`Created Stripe Webhook: ${webhookEndpoint.id}`);
