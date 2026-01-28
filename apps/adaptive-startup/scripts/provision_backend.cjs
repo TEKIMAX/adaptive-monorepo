@@ -3,7 +3,10 @@ const { execSync } = require('child_process');
 const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 
 async function createConvexProject(teamId, projectName, token) {
-    const response = await fetch(`https://api.convex.dev/api/v1/teams/${teamId}/projects`, {
+    const url = `https://api.convex.dev/v1/teams/${teamId}/projects`;
+    console.log(`Calling Convex API: ${url}`);
+
+    const response = await fetch(url, {
         method: 'POST',
         headers: {
             'Authorization': `Bearer ${token}`,
@@ -31,7 +34,12 @@ const main = async () => {
     const teamId = process.env.CONVEX_TEAM_ID;
     const token = process.env.CONVEX_TEAM_ACCESS_TOKEN;
 
-    console.log(`Provisioning Convex Backend for ${email}...`);
+    if (!teamId || !token) {
+        console.error("Missing CONVEX_TEAM_ID or CONVEX_TEAM_ACCESS_TOKEN environment variables.");
+        process.exit(1);
+    }
+
+    console.log(`Provisioning Convex Backend for ${email} (Team: ${teamId})...`);
 
     try {
         const projectName = `startup-${userId.slice(-6)}-${Date.now().toString().slice(-4)}`;
