@@ -48,20 +48,20 @@ const main = async () => {
         const project = await createConvexProject(teamId, projectName, token);
         console.log("Project created. Full response:", JSON.stringify(project, null, 2));
 
-        // Attempt to find the deployment URL in various possible locations
-        const deploymentUrl = project.prodDeploymentUrl ||
-            (project.production_deployment && project.production_deployment.url) ||
-            project.url;
+        const deploymentUrl = project.deploymentUrl;
 
         if (!deploymentUrl) {
-            throw new Error(`Could not find production deployment URL in API response: ${JSON.stringify(project)}`);
+            throw new Error(`Could not find deploymentUrl in API response: ${JSON.stringify(project)}`);
         }
 
         console.log(`Project created. Deployment URL: ${deploymentUrl}`);
 
         // Output the new URL for the next steps
         console.log(`::set-output name=convex_url::${deploymentUrl}`);
-        console.log(`::set-output name=convex_project_slug::${project.slug}`);
+        // The API returns deploymentName or projectId, but usually we need a slug. 
+        // We'll use the deploymentName (e.g. astute-ibis-160) which often matches the slug.
+        const projectSlug = project.deploymentName || project.slug || projectName;
+        console.log(`::set-output name=convex_project_slug::${projectSlug}`);
 
     } catch (error) {
         console.error("Convex provisioning failed:", error);
