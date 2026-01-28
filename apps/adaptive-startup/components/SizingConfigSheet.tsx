@@ -353,7 +353,7 @@ const SizingConfigSheet: React.FC<SizingConfigSheetProps> = ({
 
                 {/* Tabs */}
                 <div className="px-8 pt-4 pb-0 bg-stone-50/50">
-                    <div className="flex items-center gap-1 overflow-x-auto pb-4 scrollbar-hide">
+                    <div className="flex items-center gap-1 overflow-x-auto pb-4">
                         {tabs.map(tab => (
                             <button
                                 key={tab.id}

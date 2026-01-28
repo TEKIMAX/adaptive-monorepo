@@ -159,6 +159,27 @@ export const getUserByEmail = internalQuery({
     }
 });
 
+export const recordInstanceDetails = internalMutation({
+    args: {
+        email: v.string(),
+        instanceUrl: v.string(),
+        instanceProjectSlug: v.string(),
+    },
+    handler: async (ctx, args) => {
+        const userToUpdate = await ctx.db
+            .query("users")
+            .withIndex("by_email", (q) => q.eq("email", args.email))
+            .unique();
+
+        if (userToUpdate) {
+            await ctx.db.patch(userToUpdate._id, {
+                instanceUrl: args.instanceUrl,
+                instanceProjectSlug: args.instanceProjectSlug,
+            });
+        }
+    }
+});
+
 // Internal query to lookup user by token identifier
 export const getUserByToken = internalQuery({
     args: { tokenIdentifier: v.string() },
@@ -477,5 +498,23 @@ export const completeOnboarding = mutation({
         if (!user) throw new Error("User not found");
 
         await ctx.db.patch(user._id, { onboardingCompleted: true });
+    }
+});
+
+export const registerPublicKey = mutation({
+    args: { publicKey: v.string() },
+    handler: async (ctx, args) => {
+        const identity = await ctx.auth.getUserIdentity();
+        if (!identity) throw new Error("Unauthenticated");
+
+        const user = await ctx.db
+            .query("users")
+            .withIndex("by_token", (q) => q.eq("tokenIdentifier", identity.subject))
+            .unique();
+
+        if (!user) throw new Error("User not found");
+
+        await ctx.db.patch(user._id, { publicKey: args.publicKey });
+        return { success: true };
     }
 });

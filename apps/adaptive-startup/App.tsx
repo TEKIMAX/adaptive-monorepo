@@ -23,6 +23,8 @@ import { Toaster, toast } from "sonner";
 import { useEntitlements } from './hooks/useEntitlements';
 import { useProjectHandlers } from './hooks/useProjectHandlers';
 import { useAccessControl } from './hooks/useAccessControl';
+import { RealtimeVoiceSidebar } from './components/RealtimeVoiceSidebar';
+import { LiveProvider } from './contexts/LiveContext';
 
 const App: React.FC = () => {
   // --- AUTH STATE ---
@@ -57,6 +59,18 @@ const App: React.FC = () => {
     }
   }, [isAuthenticated, user, convexUser, isConvexLoading, storeUser]);
 
+  // --- CRYPTO IDENTITY ---
+  const registerPublicKey = useMutation(api.users.registerPublicKey);
+  useEffect(() => {
+    if (isAuthenticated && convexUser && !convexUser.publicKey) {
+      import('./services/crypto').then(async (m) => {
+        const identity = await m.ensureIdentity();
+        registerPublicKey({ publicKey: identity.publicKey })
+          .catch(err => console.error("Failed to register public key:", err));
+      });
+    }
+  }, [isAuthenticated, convexUser, registerPublicKey]);
+
   const [projects, setProjects] = useState<StartupData[]>([]);
   const [settings, setSettings] = useState<AISettings>({
     provider: 'ollama',
@@ -78,6 +92,7 @@ const App: React.FC = () => {
   const [isCreatingNew, setIsCreatingNew] = useState(false);
   const [showAuthWarning, setShowAuthWarning] = useState(false);
   const [showCannotDeleteLastVersionModal, setShowCannotDeleteLastVersionModal] = useState(false);
+  const [isLivePanelOpen, setIsLivePanelOpen] = useState(false);
 
   // Persistence for AI Settings
   useEffect(() => {
@@ -406,111 +421,39 @@ const App: React.FC = () => {
         />
       )}
 
-      <AppPageRouter
-        viewState={viewState}
-        currentProject={currentProject}
-        currentProjectId={currentProjectId}
-        displayProjects={displayProjects}
-        settings={settings}
-        allowedPages={currentUserAllowedPages}
-        permissions={currentUserPermissions}
-        currentUserRole={currentUserRole}
-        user={displayUser}
-        isAuthenticated={isAuthenticated}
-        handlers={handlers}
-        signOut={signOut}
-        setViewState={setViewState}
-      />
-
-      {/* Footer */}
-      {viewState !== 'ONBOARDING' && viewState !== 'LANDING_PAGE' && (
-        <div className="fixed bottom-3 right-6 w-auto text-right pointer-events-none z-40">
-          <p className="text-[10px] text-stone-400 font-medium tracking-wide font-sans">
-            © 2025 Adaptive Startup. All rights reserved.
-          </p>
-        </div>
-      )}
-
-      {/* Auth Warning Modal */}
-      {showAuthWarning && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-sm w-full overflow-hidden animate-in zoom-in-95 duration-200">
-            <div className="p-6 text-center">
-              <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4 text-amber-600">
-                <Shield className="w-6 h-6" />
-              </div>
-              <h3 className="font-serif text-xl text-stone-900 mb-2">Sign In Required</h3>
-              <div className="flex items-center space-x-4">
-                <button
-                  onClick={() => signIn()}
-                  className="px-6 py-2 bg-stone-900 text-white rounded-lg font-bold hover:bg-stone-800 transition-colors"
-                >
-                  Sign In
-                </button>
-              </div>
-              <div className="flex gap-3 mt-4 justify-center">
-                <button
-                  onClick={() => setShowAuthWarning(false)}
-                  className="text-xs text-stone-400 hover:text-stone-600 underline"
-                >
-                  Dismiss
-                </button>
-              </div>
-            </div>
+      {/* Main Content & Sidebar Layout */}
+      <div className="flex flex-1 overflow-hidden relative">
+        <LiveProvider value={{ isLivePanelOpen, setIsLivePanelOpen, toggleLivePanel: () => setIsLivePanelOpen(prev => !prev) }}>
+          <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ${isLivePanelOpen ? 'mr-[400px]' : ''}`}>
+            <AppPageRouter
+              viewState={viewState}
+              currentProject={currentProject}
+              currentProjectId={currentProjectId}
+              displayProjects={displayProjects}
+              settings={settings}
+              allowedPages={currentUserAllowedPages}
+              permissions={currentUserPermissions}
+              currentUserRole={currentUserRole}
+              user={displayUser}
+              isAuthenticated={isAuthenticated}
+              handlers={handlers}
+              signOut={signOut}
+              setViewState={setViewState}
+            />
           </div>
-        </div>
-      )}
 
-      {/* Session Expired Modal */}
-      {user && !isAuthenticated && !isLoading && !isConvexLoading && (
-        <div className="fixed inset-0 bg-stone-900/40 backdrop-blur-md z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300">
-          <div className="bg-white rounded-xl shadow-2xl px-8 py-8 md:w-[400px] text-center border border-stone-100">
-            <div className="w-12 h-12 bg-amber-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-amber-100">
-              <Shield className="w-5 h-5 text-amber-600" />
-            </div>
-            <h3 className="font-serif text-xl text-stone-900 mb-2">Session Expired</h3>
-            <p className="text-stone-500 text-sm mb-6 leading-relaxed">
-              Your security session has timed out. Please sign in again to continue working safely.
-            </p>
-            <div className="flex flex-col gap-3">
-              <button
-                onClick={() => signIn()}
-                className="w-full py-3 bg-stone-900 text-white rounded-lg font-bold uppercase tracking-wider text-xs hover:bg-stone-800 transition-all shadow-lg hover:shadow-xl"
-              >
-                Sign In to Resume
-              </button>
-              <button
-                onClick={() => signOut()}
-                className="text-xs text-stone-400 hover:text-stone-600 underline py-2"
-              >
-                Log Out
-              </button>
-            </div>
+          <div
+            className={`fixed right-0 top-0 h-full w-[400px] shadow-2xl z-40 transform transition-transform duration-300 bg-white border-l border-stone-200 ${isLivePanelOpen ? 'translate-x-0' : 'translate-x-full'
+              }`}
+          >
+            <RealtimeVoiceSidebar
+              isOpen={isLivePanelOpen}
+              onClose={() => setIsLivePanelOpen(false)}
+              userName={displayUser?.name}
+            />
           </div>
-        </div>
-      )}
-
-      {/* Cannot Delete Last Version Modal */}
-      {showCannotDeleteLastVersionModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-sm w-full p-6 text-center animate-in zoom-in-95 duration-200">
-            <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 text-red-600">
-              <Shield className="w-6 h-6" />
-            </div>
-            <h3 className="font-serif text-xl text-stone-900 mb-2">Action Prevented</h3>
-            <p className="text-stone-500 text-sm mb-6">
-              You cannot delete the last version. Please create a new version first before removing this one.
-            </p>
-            <button
-              onClick={() => setShowCannotDeleteLastVersionModal(false)}
-              className="w-full py-3 bg-stone-900 text-white rounded-lg font-bold uppercase tracking-wider text-xs hover:bg-stone-800 transition-colors"
-            >
-              Understood
-            </button>
-          </div>
-        </div>
-      )}
-
+        </LiveProvider>
+      </div>
 
     </div>
   );

@@ -27,7 +27,6 @@ import type * as aiModules_pitchDeckActions from "../aiModules/pitchDeckActions.
 import type * as aiModules_prompts from "../aiModules/prompts.js";
 import type * as aiModules_reportActions from "../aiModules/reportActions.js";
 import type * as aiModules_shared from "../aiModules/shared.js";
-import type * as aiModules_testActions from "../aiModules/testActions.js";
 import type * as aiModules_tools from "../aiModules/tools.js";
 import type * as analytics from "../analytics.js";
 import type * as apiKeys from "../apiKeys.js";
@@ -48,9 +47,7 @@ import type * as context from "../context.js";
 import type * as crons from "../crons.js";
 import type * as customers from "../customers.js";
 import type * as dailyMemos from "../dailyMemos.js";
-import type * as debug_chats from "../debug_chats.js";
 import type * as debug_env from "../debug_env.js";
-import type * as debug_users from "../debug_users.js";
 import type * as deck from "../deck.js";
 import type * as decks from "../decks.js";
 import type * as documents from "../documents.js";
@@ -120,7 +117,6 @@ declare const fullApi: ApiFromModules<{
   "aiModules/prompts": typeof aiModules_prompts;
   "aiModules/reportActions": typeof aiModules_reportActions;
   "aiModules/shared": typeof aiModules_shared;
-  "aiModules/testActions": typeof aiModules_testActions;
   "aiModules/tools": typeof aiModules_tools;
   analytics: typeof analytics;
   apiKeys: typeof apiKeys;
@@ -141,9 +137,7 @@ declare const fullApi: ApiFromModules<{
   crons: typeof crons;
   customers: typeof customers;
   dailyMemos: typeof dailyMemos;
-  debug_chats: typeof debug_chats;
   debug_env: typeof debug_env;
-  debug_users: typeof debug_users;
   deck: typeof deck;
   decks: typeof decks;
   documents: typeof documents;

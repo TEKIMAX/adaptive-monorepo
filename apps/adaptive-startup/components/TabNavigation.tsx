@@ -196,10 +196,8 @@ const TabNavigation: React.FC<TabNavigationProps> = ({ currentView, onNavigate, 
 
     // Market Sub-tool Check
     const isMarketSubTool = ['MARKET_RESEARCH', 'BOTTOM_UP_SIZING', 'COMPETITIVE_MATRIX', 'CUSTOMERS'].includes(currentView);
-
     return (
         <div className="relative flex items-center gap-3" ref={menuRef}>
-
 
             <button
                 onClick={() => setIsOpen(!isOpen)}

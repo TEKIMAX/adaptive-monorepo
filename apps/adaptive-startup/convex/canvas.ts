@@ -67,7 +67,9 @@ export const updateSection = mutation({
         section: v.string(),
         content: v.string(),
         canvasId: v.optional(v.string()),
-        tags: v.optional(v.array(v.string()))
+        tags: v.optional(v.array(v.string())),
+        signature: v.optional(v.string()),
+        publicKey: v.optional(v.string())
     },
     handler: async (ctx: any, args: any) => {
         const identity = await requireAuth(ctx);
@@ -123,6 +125,27 @@ export const updateSection = mutation({
 
         // Also update project timestamp
         await ctx.db.patch(project._id, { updatedAt: Date.now() });
+
+        // Automated Audit Trail with Signature
+        const user = await ctx.db
+            .query("users")
+            .withIndex("by_token", (q: any) => q.eq("tokenIdentifier", identity.subject))
+            .unique();
+
+        await ctx.db.insert("activity_log", {
+            projectId: project._id,
+            orgId,
+            userId: identity.subject,
+            userName: user?.name || "Unknown User",
+            action: "UPDATE",
+            entityType: "canvas",
+            entityId: targetCanvasId,
+            entityName: `${args.section} Suggestion Approved`,
+            changes: `Updated ${args.section} with AI content`,
+            signature: args.signature,
+            publicKey: args.publicKey,
+            timestamp: Date.now()
+        });
     }
 });
 

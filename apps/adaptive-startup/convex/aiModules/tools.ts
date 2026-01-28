@@ -235,20 +235,20 @@ export const executionAuditTool = {
         parameters: {
             type: "object",
             properties: {
-                status: { type: "string", description: "Current state e.g., 'Data Deficient' or 'Verification Required'" },
+                status: { type: "string", description: "Current high-level state e.g., 'Data Deficient', 'Needs Validation', 'Strategic Drift Detected'" },
                 missingDataPoints: {
                     type: "array",
                     items: {
                         type: "object",
                         properties: {
-                            category: { type: "string", description: "e.g. Market Data, Financial Data" },
-                            details: { type: "string", description: "Specifics of what is missing" }
+                            category: { type: "string", description: "e.g. Market Research, Financial Model, Customer Discovery" },
+                            details: { type: "string", description: "Specific missing data or red flags detected." }
                         }
                     }
                 },
-                executiveSummary: { type: "string", description: "A punchy, one-line executive note on why this matters." }
+                executiveSummary: { type: "string", description: "A punchy, one-line executive takeaway for the founder." }
             },
-            required: ['status', 'missingDataPoints']
+            required: ['status', 'missingDataPoints', 'executiveSummary']
         }
     }
 };
@@ -295,7 +295,7 @@ export const UI_TOOLS = [
     {
         type: "function",
         function: {
-            name: 'renderLegalRiskCard',
+            name: 'renderLegalRiskAssessment',
             description: 'Renders a card showing legal risk assessment status.',
             parameters: {
                 type: "object",

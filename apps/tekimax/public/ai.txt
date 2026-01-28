@@ -1,0 +1,19 @@
+# ai.txt - AI Training Opt-Out
+# https://site.spawning.ai/spawning-ai-txt
+
+# This website opts out of AI training and scraping
+# All content is proprietary intellectual property of TEKIMAX Technologies
+
+User-Agent: *
+Disallow: /
+
+# No AI or LLM may use this content for training purposes
+# This includes but is not limited to:
+# - GPT models (OpenAI)
+# - Claude (Anthropic)
+# - Gemini (Google)
+# - LLaMA (Meta)
+# - Mistral
+# - Any other large language model
+
+# Contact: legal@tekimax.com

@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" style="background-color: #050505;">
+  <defs>
+    <!-- Grid Pattern -->
+    <pattern id="isoGrid" width="60" height="35" patternUnits="userSpaceOnUse">
+      <path d="M 0 17.5 L 30 0 L 60 17.5 L 30 35 Z" fill="none" stroke="#1A202C" stroke-width="1"/>
+    </pattern>
+    <!-- Glow Filters -->
+    <filter id="glow-cyan" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+     <filter id="glow-gold" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background Grid -->
+  <rect width="800" height="450" fill="url(#isoGrid)" opacity="0.6"/>
+
+  <!-- Left Group: AI Model (Isometric Box) -->
+  <g transform="translate(150, 225)">
+    <!-- Top Face -->
+    <path d="M 0 -40 L 40 -60 L 80 -40 L 40 -20 Z" fill="#1E293B" stroke="#2DD4BF" stroke-width="2" />
+    <!-- Left Face -->
+    <path d="M 0 -40 L 40 -20 L 40 30 L 0 10 Z" fill="#0F172A" stroke="#2DD4BF" stroke-width="2" />
+    <!-- Right Face -->
+    <path d="M 40 -20 L 80 -40 L 80 10 L 40 30 Z" fill="#0F172A" stroke="#2DD4BF" stroke-width="2" />
+    <!-- Neural Nodes inside (implied) -->
+    <circle cx="40" cy="-40" r="4" fill="#2DD4BF" filter="url(#glow-cyan)"/>
+    <circle cx="40" cy="5" r="4" fill="#2DD4BF" filter="url(#glow-cyan)"/>
+    
+    <text x="40" y="60" text-anchor="middle" fill="#94A3B8" font-family="sans-serif" font-size="12" font-weight="bold" letter-spacing="1">AI MODEL</text>
+  </g>
+
+  <!-- Middle Group: System Core (Isometric Chips) -->
+  <g transform="translate(360, 200)">
+     <!-- Base Plate -->
+    <path d="M 0 0 L 60 -30 L 120 0 L 60 30 Z" fill="#1E293B" stroke="#334155" stroke-width="2"/>
+    <!-- Core Block -->
+    <g transform="translate(30, -15)">
+        <path d="M 0 0 L 30 -15 L 60 0 L 30 15 Z" fill="#1E293B" stroke="#FBBF24" stroke-width="2" filter="url(#glow-gold)"/>
+        <path d="M 0 0 L 30 15 L 30 35 L 0 20 Z" fill="#0F172A" stroke="#FBBF24" stroke-width="1"/>
+        <path d="M 30 15 L 60 0 L 60 20 L 30 35 Z" fill="#0F172A" stroke="#FBBF24" stroke-width="1"/>
+    </g>
+    <text x="60" y="80" text-anchor="middle" fill="#94A3B8" font-family="sans-serif" font-size="12" font-weight="bold" letter-spacing="1">ADAPTIVE CORE</text>
+  </g>
+
+  <!-- Right Group: User (Stylized Isometric) -->
+  <g transform="translate(600, 225)">
+     <!-- Head -->
+    <path d="M 0 -50 L 20 -60 L 40 -50 L 20 -40 Z" fill="#2DD4BF" opacity="0.8"/>
+     <!-- Body Block -->
+    <path d="M 0 -30 L 20 -40 L 40 -30 L 20 -20 Z" fill="#1E293B" stroke="#2DD4BF" stroke-width="2"/>
+    <path d="M 0 -30 L 20 -20 L 20 40 L 0 30 Z" fill="#0F172A" stroke="#2DD4BF" stroke-opacity="0.5"/>
+    <path d="M 20 -20 L 40 -30 L 40 30 L 20 40 Z" fill="#0F172A" stroke="#2DD4BF" stroke-opacity="0.5"/>
+    
+    <text x="20" y="60" text-anchor="middle" fill="#94A3B8" font-family="sans-serif" font-size="12" font-weight="bold" letter-spacing="1">USER</text>
+  </g>
+
+  <!-- Connections (Pipes) -->
+  <!-- Left to Middle -->
+  <path d="M 230 215 L 290 185 L 360 220" fill="none" stroke="#2DD4BF" stroke-width="2" stroke-dasharray="5,5" opacity="0.6"/>
+  
+  <!-- Middle to Right -->
+  <path d="M 480 220 L 540 250 L 600 215" fill="none" stroke="#FBBF24" stroke-width="2" filter="url(#glow-gold)"/>
+
+</svg>

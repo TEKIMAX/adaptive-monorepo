@@ -1,5 +1,8 @@
-import React from 'react';
-import { Scale, AlertTriangle, ShieldCheck, Info } from 'lucide-react';
+
+import React, { useState } from 'react';
+import { Scale, ShieldCheck } from 'lucide-react';
+import { toast } from 'sonner';
+import ApprovalGuard from './ApprovalGuard';
 
 interface Risk {
     category: string;
@@ -12,9 +15,17 @@ interface LegalRiskAssessmentCardProps {
     overallRisk: string;
     summary: string;
     risks: Risk[];
+    projectId?: string | null;
+    onSendMessage?: (text: string) => void;
 }
 
-const LegalRiskAssessmentCard: React.FC<LegalRiskAssessmentCardProps> = ({ overallRisk, summary, risks }) => {
+const LegalRiskAssessmentCard: React.FC<LegalRiskAssessmentCardProps> = ({
+    overallRisk, summary, risks, projectId, onSendMessage
+}) => {
+    const [isSaved, setIsSaved] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const [isDenied, setIsDenied] = useState(false);
+
     const getRiskColor = (level: string) => {
         switch (level.toLowerCase()) {
             case 'high': return 'text-red-600 bg-red-50 border-red-100';
@@ -24,8 +35,25 @@ const LegalRiskAssessmentCard: React.FC<LegalRiskAssessmentCardProps> = ({ overa
         }
     };
 
+    const handleApprove = async () => {
+        setIsSaving(true);
+        // Placeholder for real saving logic if it existed
+        setTimeout(() => {
+            setIsSaved(true);
+            setIsSaving(false);
+            toast.success("Risk assessment acknowledged and logged.");
+        }, 800);
+    };
+
+    const handleDeny = () => {
+        setIsDenied(true);
+        const rejectionMsg = `I've denied this legal risk assessment. I think the ${risks[0]?.category || 'overall'} risk is being ${overallRisk.toLowerCase() === 'high' ? 'overstated' : 'understated'}. Can you re-evaluate based on the fact that we are currently pre-revenue and pre-launch?`;
+        onSendMessage?.(rejectionMsg);
+        toast.info("Suggestion denied. Follow-up sent to AI.");
+    };
+
     return (
-        <div className="my-6 w-full md:max-w-xl bg-white border border-stone-200 rounded-xl overflow-hidden shadow-sm">
+        <div className="my-6 w-full md:max-w-xl bg-white border border-stone-200 rounded-xl overflow-hidden shadow-sm text-left animate-fade-in">
             <div className="bg-stone-50/50 p-4 border-b border-stone-100 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                     <div className="p-2 bg-stone-100 text-stone-600 rounded-lg">
@@ -44,7 +72,7 @@ const LegalRiskAssessmentCard: React.FC<LegalRiskAssessmentCardProps> = ({ overa
             <div className="p-4">
                 <p className="text-sm text-stone-600 italic mb-4 border-l-2 border-stone-200 pl-3">{summary}</p>
 
-                <div className="space-y-3">
+                <div className="space-y-3 mb-6">
                     {risks.map((risk, idx) => (
                         <div key={idx} className="border border-stone-100 rounded-lg p-3 hover:bg-stone-50/50 transition-colors">
                             <div className="flex justify-between items-start mb-1">
@@ -58,6 +86,18 @@ const LegalRiskAssessmentCard: React.FC<LegalRiskAssessmentCardProps> = ({ overa
                             </div>
                         </div>
                     ))}
+                </div>
+
+                {/* Approval Guard */}
+                <div className="flex justify-end pt-2">
+                    <ApprovalGuard
+                        onApprove={handleApprove}
+                        onDeny={handleDeny}
+                        isSaved={isSaved}
+                        isSaving={isSaving}
+                        isDenied={isDenied}
+                        approveLabel="Acknowledge Risks"
+                    />
                 </div>
             </div>
         </div>

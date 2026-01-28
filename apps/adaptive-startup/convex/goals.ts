@@ -259,3 +259,79 @@ export const syncKeyResult = mutation({
     return fetchedValue;
   }
 });
+
+export const saveGoalWithKRs = mutation({
+  args: {
+    projectId: v.string(),
+    title: v.string(),
+    description: v.optional(v.string()),
+    type: v.string(),
+    timeframe: v.string(),
+    status: v.string(),
+    keyResults: v.array(v.object({
+      label: v.string(),
+      target: v.string(),
+      current: v.string(),
+      status: v.string()
+    })),
+    signature: v.optional(v.string()),
+    publicKey: v.optional(v.string())
+  },
+  handler: async (ctx, args) => {
+    const identity = await requireAuth(ctx);
+    const project = await getProjectSafe(ctx, args.projectId);
+    if (!project) throw new Error("Project not found");
+
+    const goalId = await ctx.db.insert("goals", {
+      projectId: project._id,
+      orgId: project.orgId,
+      title: args.title,
+      description: args.description || "",
+      type: args.type,
+      timeframe: args.timeframe,
+      status: args.status,
+      createdAt: Date.now()
+    });
+
+    for (const kr of args.keyResults) {
+      // Parse target/current if numeric, otherwise use raw
+      const targetNum = parseFloat(kr.target.replace(/[^0-9.-]+/g, "")) || 0;
+      const currentNum = parseFloat(kr.current.replace(/[^0-9.-]+/g, "")) || 0;
+
+      await ctx.db.insert("key_results", {
+        goalId,
+        projectId: project._id,
+        description: kr.label,
+        target: targetNum,
+        current: currentNum,
+        unit: kr.target.includes("%") ? "%" : kr.target.includes("$") ? "$" : "units",
+        updateType: 'manual',
+        lastUpdated: Date.now(),
+        status: kr.status === 'completed' ? 'Completed' : 'In Progress'
+      });
+    }
+
+    // Log Activity with Signature
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) => q.eq("tokenIdentifier", identity.subject))
+      .unique();
+
+    await ctx.db.insert("activity_log", {
+      projectId: project._id,
+      orgId: project.orgId,
+      userId: identity.subject,
+      userName: user?.name || "Unknown User",
+      action: "CREATE",
+      entityType: "goal",
+      entityId: goalId,
+      entityName: args.title,
+      changes: `Created goal with ${args.keyResults.length} KR(s) via AI Suggestion`,
+      signature: args.signature,
+      publicKey: args.publicKey,
+      timestamp: Date.now()
+    });
+
+    return goalId;
+  }
+});

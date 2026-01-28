@@ -1,0 +1,35 @@
+<svg width="400" height="400" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="gridGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#B38B3F;stop-opacity:0.4" /> <!-- Using Tekimax Gold tone -->
+      <stop offset="100%" style="stop-color:#B38B3F;stop-opacity:0.1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Hexagonal Lattice/Grid -->
+  <path d="M50 50 L100 25 L150 50 L150 100 L100 125 L50 100 Z" stroke="url(#gridGradient)" stroke-width="1" fill="none" opacity="0.5" />
+  <path d="M150 50 L200 25 L250 50 L250 100 L200 125 L150 100 Z" stroke="url(#gridGradient)" stroke-width="1" fill="none" opacity="0.3" />
+  
+  <path d="M50 150 L100 125 L150 150 L150 200 L100 225 L50 200 Z" stroke="url(#gridGradient)" stroke-width="1" fill="none" opacity="0.4" />
+  <path d="M250 150 L300 125 L350 150 L350 200 L300 225 L250 200 Z" stroke="url(#gridGradient)" stroke-width="1" fill="none" opacity="0.3" />
+
+  <!-- Connecting Lines (Circuit/Schematic look) -->
+  <line x1="150" y1="100" x2="250" y2="150" stroke="url(#gridGradient)" stroke-width="1" opacity="0.3" />
+  <line x1="100" y1="125" x2="200" y2="125" stroke="url(#gridGradient)" stroke-width="1" stroke-dasharray="2 2" opacity="0.3" />
+  
+  <!-- Joint Nodes -->
+  <circle cx="100" cy="125" r="3" fill="#B38B3F" opacity="0.4" />
+  <circle cx="150" cy="100" r="3" fill="#B38B3F" opacity="0.4" />
+  <circle cx="200" cy="125" r="3" fill="#B38B3F" opacity="0.4" />
+  <circle cx="250" cy="150" r="3" fill="#B38B3F" opacity="0.4" />
+
+  <!-- Mechanical overlay -->
+  <path d="M300 300 Q350 250 300 200" stroke="#B38B3F" stroke-width="2" fill="none" opacity="0.2" />
+  <path d="M280 300 Q330 250 280 200" stroke="#B38B3F" stroke-width="2" fill="none" opacity="0.1" />
+  <circle cx="300" cy="200" r="5" stroke="#B38B3F" stroke-width="2" fill="none" opacity="0.3" />
+
+  <!-- Blueprint Grid Detail -->
+  <line x1="0" y1="350" x2="400" y2="350" stroke="#B38B3F" stroke-width="0.5" opacity="0.1" />
+  <line x1="0" y1="360" x2="400" y2="360" stroke="#B38B3F" stroke-width="0.5" opacity="0.1" />
+  <line x1="0" y1="370" x2="400" y2="370" stroke="#B38B3F" stroke-width="0.5" opacity="0.1" />
+</svg>

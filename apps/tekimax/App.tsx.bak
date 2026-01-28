@@ -1,0 +1,742 @@
+
+import React, { useEffect } from 'react';
+import Navigation from './components/Navigation';
+import FuturisticIllustration from './components/FuturisticIllustration';
+import TechnicalBackground from './components/TechnicalBackground';
+import ToolTip from './components/ToolTip';
+import PrivacyPolicy from './components/PrivacyPolicy';
+import TermsOfService from './components/TermsOfService';
+
+const App: React.FC = () => {
+  // Simple "Router" Logic
+  const path = window.location.pathname;
+  if (path === '/privacy') return <PrivacyPolicy />;
+  if (path === '/terms') return <TermsOfService />;
+  if (path === '/developers') {
+    window.location.href = 'http://localhost:5174';
+    return null;
+  }
+
+  const [activeForm, setActiveForm] = React.useState<'partnership' | 'licensing' | 'hackathon' | 'contact' | null>(null);
+  const [activeSheet, setActiveSheet] = React.useState<'learning' | 'startup' | null>(null);
+
+  // Contact Form State
+  const [contactFormStatus, setContactFormStatus] = React.useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
+  const [contactData, setContactData] = React.useState({ name: '', email: '', subject: '', message: '' });
+
+  const handleContactChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setContactData({ ...contactData, [e.target.name]: e.target.value });
+  };
+
+  const handleContactSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setContactFormStatus('submitting');
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(contactData),
+      });
+      if (res.ok) {
+        setContactFormStatus('success');
+        setContactData({ name: '', email: '', subject: '', message: '' });
+      } else {
+        setContactFormStatus('error');
+      }
+    } catch (error) {
+      setContactFormStatus('error');
+    }
+  };
+
+  const handleContactClick = () => {
+    setActiveForm('contact');
+    document.getElementById('research-sec')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    // ... existing effect code ...
+    const observerOptions = {
+      threshold: 0.1,
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('revealed');
+        }
+      });
+    }, observerOptions);
+
+    document.querySelectorAll('.reveal-on-scroll').forEach((el) => {
+      observer.observe(el);
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div className="min-h-screen font-sans selection:bg-tekimax-gold selection:text-white overflow-x-hidden">
+      <Navigation onContactClick={handleContactClick} />
+
+      {/* Hero + Partners Container */}
+      <div className="h-screen flex flex-col relative bg-tekimax-navy overflow-hidden">
+        <TechnicalBackground />
+
+        {/* Hero Section */}
+        <section id="hero" className="relative flex-grow flex items-center pt-32 pb-12 px-6 md:px-12 z-10 w-full">
+
+          <div className="max-w-7xl mx-auto relative z-10 w-full">
+            <div className="max-w-5xl">
+              <div className="flex items-center gap-4 mb-8 mt-12 reveal-on-scroll">
+                <span className="hidden md:inline-block px-4 py-1.5 rounded-full bg-tekimax-teal/20 text-tekimax-teal text-[11px] font-bold tracking-[0.2em] uppercase border border-tekimax-teal/30">
+                  Human-Centered AI
+                </span>
+                <div className="h-px w-16 bg-white/20"></div>
+                <span className="text-white/40 text-[11px] font-bold uppercase tracking-[0.2em]">Engineering For Good</span>
+              </div>
+
+              <h1 className="font-serif text-6xl md:text-8xl lg:text-[100px] text-white leading-[0.9] mb-10 tracking-tight reveal-on-scroll" style={{ transitionDelay: '0.2s' }}>
+                Self-Adaptive <br />
+                <span className="italic font-normal text-tekimax-gold">Engine.</span>
+              </h1>
+
+              <p className="text-base md:text-xl text-white/70 leading-relaxed mb-12 max-w-2xl font-light reveal-on-scroll" style={{ transitionDelay: '0.4s' }}>
+                We engineer <strong>Adaptive Infrastructure</strong> for <strong className="text-white">Neurodivergent Learners</strong> and <strong className="text-white">Venture Builders</strong>. By augmenting <strong>Cognitive Capacity</strong>, we create systems that evolve to amplify your human potential.
+              </p>
+
+              <div className="flex flex-wrap gap-6 items-center reveal-on-scroll" style={{ transitionDelay: '0.6s' }}>
+                <a href="#platforms" className="bg-white text-tekimax-navy px-8 py-4 rounded-full font-bold hover:bg-tekimax-gold hover:text-white transition-all shadow-2xl">
+                  View Our Platforms
+                </a>
+                <a href="#exoskeleton" className="hidden md:block text-white border border-white/20 px-8 py-4 rounded-full font-bold hover:bg-white/5 transition-all">
+                  The Research
+                </a>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Partners Section */}
+        <section className="py-8 px-6 border-t border-b border-white/5 bg-tekimax-navy/50 backdrop-blur-sm relative z-20 flex-none">
+          <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-center gap-12 md:gap-24">
+
+            <div className="flex items-center gap-8">
+              <span className="text-white text-[10px] font-bold uppercase tracking-[0.2em] whitespace-nowrap hidden md:block">Accelerated By</span>
+
+              {/* NVIDIA: Needs white background for legibility */}
+              <div className="bg-white rounded-sm flex items-center">
+                <img src="/images/nvidia-inception-program-badge-rgb-for-screen.svg" alt="NVIDIA Inception Program" className="h-16 w-auto" />
+              </div>
+
+              <div className="h-8 w-px bg-white/30 hidden md:block"></div>
+
+              {/* Google/Microsoft: Keep as white text on navy */}
+              <img src="/images/google-partner.png" alt="Microsoft for Startups Founders Hub" className="h-14 w-auto brightness-0 invert" />
+            </div>
+
+            <p className="text-white/80 text-xs md:text-sm font-light max-w-lg text-center md:text-left leading-relaxed">
+              We create on the <strong className="text-white">NVIDIA AI</strong> stack. As members of the Inception Program, we leverage cutting-edge GPU acceleration to train our Self-Adaptive Engine.
+            </p>
+
+          </div>
+        </section>
+      </div>
+
+      {/* The Core IP Section */}
+      <section id="engine" className="py-32 px-6 bg-white border-b border-tekimax-dark/5 scroll-mt-20">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid lg:grid-cols-2 gap-20 items-center">
+            <div className="reveal-on-scroll">
+              <div className="flex items-center gap-4 mb-6">
+                <div className="h-px w-16 bg-tekimax-gold/30"></div>
+                <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-tekimax-gold block">Our Core Technology</span>
+              </div>
+              <h2 className="font-serif text-5xl md:text-7xl text-tekimax-dark mb-10 leading-tight">
+                Context is <span className="italic">Key.</span>
+              </h2>
+              <div className="space-y-6 text-lg text-tekimax-dark/60 font-light leading-relaxed">
+                <p>
+                  We believe technology should expand the human mind, not replace it. <strong>Our Architecture Engine</strong> remembers what matters to you, evolving as you grow. From <strong>Neurodivergent Learners</strong> to <strong>Entrepreneurs</strong>, we build tools that naturally adapt to your style ensuring that as AI accelerates, your agency and ingenuity remain at the center of discovery.
+                </p>
+                <p>
+                  Whether bridging the gap for a neurodivergent learner using <strong>Modality Switching</strong> or guiding a founder through market validation with <strong>Risk-Adjusted Strategy</strong>, <strong>our self-adaptive engine</strong> acts as a supportive partner, tuning its complexity, tone, and interface to adapt to your learning and operating modalities.
+                </p>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 reveal-on-scroll" style={{ transitionDelay: '0.3s' }}>
+              <div className="relative p-8 bg-tekimax-cream rounded-3xl border border-tekimax-dark/5 flex flex-col justify-end h-64 overflow-hidden group">
+                <div className="absolute inset-0 pointer-events-none">
+                  <img src="/images/exoskeleton-bg.svg" alt="" className="w-full h-full object-cover opacity-30" />
+                </div>
+                <div className="absolute top-6 right-6 flex items-center gap-2 px-3 py-1 rounded-full bg-tekimax-gold/10 border border-tekimax-gold/20 z-20">
+                  <span className="text-xs md:text-[10px] font-bold uppercase tracking-wider text-tekimax-gold">Clinical Research</span>
+                </div>
+                <div className="relative z-10">
+                  <div className="text-tekimax-gold font-serif text-3xl italic mb-4">Adaptive Learning</div>
+                  <div className="text-lg md:text-xs opacity-60">
+                    Adaptive support for neurodivergent learners.
+                  </div>
+                </div>
+              </div>
+              <div className="relative p-8 bg-tekimax-navy text-white rounded-3xl flex flex-col justify-end h-64 overflow-hidden group">
+                <div className="absolute inset-0 pointer-events-none">
+                  <img src="/images/dna-bg.svg" alt="" className="w-full h-full object-cover opacity-20" />
+                </div>
+                <div className="absolute top-6 right-6 flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/20 z-20">
+                  <span className="text-xs md:text-[10px] font-bold uppercase tracking-wider text-white">Live Beta</span>
+                </div>
+                <div className="relative z-10">
+                  <div className="text-tekimax-gold font-serif text-3xl italic mb-4">Adaptive Startup</div>
+                  <div className="text-lg md:text-xs opacity-60 ">
+                    Stabilizing strategy through adaptive venture data.
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section >
+
+      {/* Team Section */}
+      <section className="py-32 px-6 bg-white border-b border-tekimax-dark/5 scroll-mt-20">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col md:flex-row items-center gap-16 md:gap-24">
+
+            {/* Collage */}
+            <div className="w-full md:w-1/2 ">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-4 mt-8">
+                  <div className="rounded-2xl overflow-hidden shadow-xl h-48 md:h-64">
+                    <img src="/images/Team.png" alt="Collaborative Team" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
+                  </div>
+                  <div className="rounded-2xl overflow-hidden shadow-xl h-32 md:h-40">
+                    <img src="/images/us_founder_mission_group.png" alt="Team Discussion" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <div className="rounded-2xl overflow-hidden shadow-xl h-32 md:h-40">
+                    <img src="/images/manworking.png" alt="Focused Work" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
+                  </div>
+                  <div className="rounded-2xl overflow-hidden shadow-xl h-48 md:h-64">
+                    <img src="/images/hero-carousel-5.png" alt="Engineering Future" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Text Content */}
+            <div className="w-full md:w-1/2 reveal-on-scroll">
+              <div className="flex items-center gap-4 mb-6">
+                <div className="h-px w-12 bg-tekimax-gold"></div>
+                <span className="text-xs font-bold uppercase tracking-[0.2em] text-tekimax-gold">Our Model of TEAM</span>
+              </div>
+
+              <h2 className="font-serif text-5xl md:text-6xl text-tekimax-dark mb-8 leading-tight">
+                Come build <span className="italic text-tekimax-gold">with us.</span>
+              </h2>
+
+              <div className="space-y-6 text-lg text-tekimax-dark/70 font-light leading-relaxed">
+                <p>
+                  We are not just engineering products; we are engineering opportunity. Our mission is to democratize access to advanced computing, ensuring that the future is shaped by a diversity of minds and experiences.
+                </p>
+                <p className="font-medium text-tekimax-dark text-xl">
+                  "We build APIs to power the future of computing."
+                </p>
+              </div>
+
+              <div className="mt-10">
+                <button
+                  onClick={() => setActiveForm('partnership')}
+                  className="px-8 py-4 bg-tekimax-navy text-white rounded-full font-bold uppercase tracking-widest text-xs hover:bg-tekimax-gold transition-colors shadow-lg hover:shadow-xl hover:-translate-y-1"
+                >
+                  Join the Mission
+                </button>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Solutions / Platforms Section */}
+      <section id="platforms" className="py-32 px-6 bg-[#F9F8F4] scroll-mt-20">
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-20 reveal-on-scroll text-center md:text-left">
+            <h2 className="font-serif text-5xl md:text-7xl text-tekimax-dark mb-6 leading-tight">Vertical <span className="italic text-tekimax-gold">Platforms.</span></h2>
+            <p className="text-base text-tekimax-dark/50 max-w-2xl font-light leading-relaxed">
+              We apply our <strong>Self-Adaptive Engine and SDK</strong> to build these <strong>vertical platforms</strong>. The <strong>Adaptive Neurodivergent Platform</strong> helps learners in their own modality via <strong>clinical study</strong>, while <strong>Adaptive Startup</strong> provides a <strong>beta</strong> environment for founders to <strong>learn with their actual data and stage</strong>.
+            </p>
+          </div>
+
+          <div className="grid lg:grid-cols-2 gap-8">
+            {/* Platform 1 Card: Learning */}
+            <a href="https://adaptivelearning.tekimax.com" target="_blank" rel="noopener noreferrer" className="relative group rounded-[2.5rem] overflow-hidden min-h-[600px] flex flex-col justify-end p-6 md:p-10 cursor-pointer shadow-2xl transition-all hover:scale-[1.01]">
+              <div className="absolute inset-0">
+                <img src="/images/research-us-flag.png" alt="Learning Background" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                <div className="absolute inset-0 bg-gradient-to-t from-tekimax-navy via-tekimax-navy/90 to-transparent opacity-100"></div>
+              </div>
+              <div className="relative z-10 text-white">
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/20 mb-6 backdrop-blur-md">
+                  <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></div>
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-white">Current Clinical Research Focus</span>
+                </div>
+                <h3 className="font-serif text-3xl md:text-5xl mb-4">Adaptive <span className="italic text-tekimax-teal">Learning.</span></h3>
+                <p className="text-white/70 text-lg font-light leading-relaxed mb-8 max-w-md">
+                  Empowering <strong>neurodivergent learners</strong> in their own modality. Currently operating on <strong>trial and clinical study</strong> with a focus on <strong>partnership research</strong>, confirming how adaptive interfaces turn non-linear thinking into a competitive advantage.
+                </p>
+                <div className="flex items-center gap-4">
+                  <button className="w-12 h-12 rounded-full bg-white/10 backdrop-blur border border-white/20 flex items-center justify-center group-hover:bg-tekimax-teal group-hover:border-tekimax-teal transition-all">
+                    <svg className="w-5 h-5 text-white transform -rotate-45 group-hover:rotate-0 transition-transform duration-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+                  </button>
+                  <span className="text-xs font-bold uppercase tracking-widest text-white/60 group-hover:text-white transition-colors">Launch Platform</span>
+                </div>
+              </div>
+            </a>
+
+            {/* Platform 2 Card: Startup */}
+            <a href="https://adaptivestartup.io/" target="_blank" rel="noopener noreferrer" className="relative group rounded-[2.5rem] overflow-hidden min-h-[600px] flex flex-col justify-end p-6 md:p-10 cursor-pointer shadow-2xl transition-all hover:scale-[1.01]">
+              <div className="absolute inset-0">
+                <img src="/images/IMG_0953.JPG" alt="Startup Background" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                <div className="absolute inset-0 bg-gradient-to-t from-tekimax-navy via-tekimax-navy/90 to-transparent opacity-100"></div>
+              </div>
+              <div className="relative z-10 text-white">
+                <div className="mb-8">
+                  <img src="/images/adaptivestartup.png" alt="Adaptive Startup Logo" className="h-32 w-auto" />
+                </div>
+                <h3 className="font-serif text-3xl md:text-5xl mb-4">Adaptive <span className="italic text-tekimax-gold">Startup.</span></h3>
+                <p className="text-white/70 text-lg font-light leading-relaxed mb-8 max-w-md">
+                  A <strong>beta version</strong> to support founders managing <strong>early-stage startups</strong>. Learn concepts in your modality as the platform <strong>grows with you</strong>. Request an <strong>invite to beta</strong>.
+                </p>
+                <div className="flex items-center gap-4">
+                  <button className="w-12 h-12 rounded-full bg-white/10 backdrop-blur border border-white/20 flex items-center justify-center group-hover:bg-tekimax-gold group-hover:border-tekimax-gold transition-all">
+                    <svg className="w-5 h-5 text-white transform -rotate-45 group-hover:rotate-0 transition-transform duration-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+                  </button>
+                  <span className="text-xs font-bold uppercase tracking-widest text-white/60 group-hover:text-white transition-colors">Launch Platform</span>
+                </div>
+              </div>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      {/* Team Section */}
+      <section className="py-32 px-6 bg-white border-b border-tekimax-dark/5 scroll-mt-20">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col md:flex-row items-center gap-16 md:gap-24">
+
+            {/* Collage */}
+            <div className="w-full md:w-1/2 ">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-4 mt-8">
+                  <div className="rounded-2xl overflow-hidden shadow-xl h-48 md:h-64">
+                    <img src="/images/Team.png" alt="Collaborative Team" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
+                  </div>
+                  <div className="rounded-2xl overflow-hidden shadow-xl h-32 md:h-40">
+                    <img src="/images/us_founder_mission_group.png" alt="Team Discussion" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <div className="rounded-2xl overflow-hidden shadow-xl h-32 md:h-40">
+                    <img src="/images/manworking.png" alt="Focused Work" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
+                  </div>
+                  <div className="rounded-2xl overflow-hidden shadow-xl h-48 md:h-64">
+                    <img src="/images/hero-carousel-5.png" alt="Engineering Future" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Text Content */}
+            <div className="w-full md:w-1/2 reveal-on-scroll">
+              <div className="flex items-center gap-4 mb-6">
+                <div className="h-px w-12 bg-tekimax-gold"></div>
+                <span className="text-xs font-bold uppercase tracking-[0.2em] text-tekimax-gold">Our Model of TEAM</span>
+              </div>
+
+              <h2 className="font-serif text-5xl md:text-6xl text-tekimax-dark mb-8 leading-tight">
+                Come build <span className="italic text-tekimax-gold">with us.</span>
+              </h2>
+
+              <div className="space-y-6 text-lg text-tekimax-dark/70 font-light leading-relaxed">
+                <p>
+                  We are not just engineering products; we are engineering opportunity. Our mission is to democratize access to advanced computing, ensuring that the future is shaped by a diversity of minds and experiences.
+                </p>
+                <p className="font-medium text-tekimax-dark text-xl">
+                  "Adaptive Learning API"
+                </p>
+              </div>
+
+              <div className="mt-10">
+                <button
+                  onClick={() => setActiveForm('partnership')}
+                  className="px-8 py-4 bg-tekimax-navy text-white rounded-full font-bold uppercase tracking-widest text-xs hover:bg-tekimax-gold transition-colors shadow-lg hover:shadow-xl hover:-translate-y-1"
+                >
+                  Join the Mission
+                </button>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Side Sheet Overlay */}
+      <div className={`fixed inset-0 z-50 transition-colors duration-500 ${activeSheet ? 'bg-tekimax-navy/80 backdrop-blur-sm pointer-events-auto' : 'bg-transparent pointer-events-none'}`} onClick={() => setActiveSheet(null)}></div>
+
+      {/* Side Sheet Content - Learning (Self-Adaptive Engine) */}
+      <div className={`fixed inset-y-0 right-0 w-full md:w-[60%] lg:w-[50%] bg-[#F9F8F4] z-50 shadow-2xl transform transition-transform duration-500 ease-spring ${activeSheet === 'learning' ? 'translate-x-0' : 'translate-x-full'} overflow-y-auto`}>
+        <div className="p-10 md:p-16">
+          <button onClick={() => setActiveSheet(null)} className="absolute top-8 right-8 w-10 h-10 rounded-full bg-tekimax-dark/5 hover:bg-tekimax-dark/10 flex items-center justify-center transition-colors">
+            <svg className="w-5 h-5 text-tekimax-dark" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+          <span className="text-tekimax-teal font-bold tracking-widest uppercase text-xs mb-4 block">Adaptive Learning Infrastructure</span>
+          <div className="mb-8">
+            <img src="/images/tekimax-logo-darkRGB-1.png" alt="Tekimax Logo" className="h-20 w-auto" />
+          </div>
+          <h2 className="font-serif text-4xl md:text-5xl text-tekimax-dark mb-4">Self-Adaptive Engine</h2>
+
+
+          <div className="space-y-12">
+            <div>
+            </div>
+
+            <div className="p-8 bg-tekimax-navy text-white rounded-[2.5rem] shadow-2xl relative overflow-hidden group">
+              <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                <svg className="w-24 h-24" fill="currentColor" viewBox="0 0 24 24"><path d="M13 3l-2 3H8V3H6v3H3v2h3v3h2V8h3l-2 3h2l3-4.5L13 3zM5 13l2-3h3v3h2v-3h3v-2h-3v-3h-2v3h-3l2-3H7l-3 4.5L5 13z" /></svg>
+              </div>
+              <h4 className="text-tekimax-gold text-xs font-bold uppercase tracking-widest mb-4">Architectural Roadmap</h4>
+              <div className="space-y-4 relative z-10">
+                <p className="text-sm font-light leading-relaxed opacity-80">
+                  A fundamental shift from static, one-size-fits-all learning to a dynamic, human-centric Self-Adaptive Engine that adapts to each learner.
+                </p>
+                <div className="pt-4 border-t border-white/10 space-y-3">
+                  <div className="flex gap-3 text-xs">
+                    <span className="text-tekimax-gold font-bold">2025:</span>
+                    <span className="opacity-60">Deployment of the first Self-Adaptive state machine with modality switching for neurodivergent learners.</span>
+                  </div>
+                  <div className="flex gap-3 text-xs">
+                    <span className="text-tekimax-gold font-bold">2027:</span>
+                    <span className="opacity-60">Post-quantum encryption and data sovereignty for learner profiles.</span>
+                  </div>
+                  <div className="flex gap-3 text-xs">
+                    <span className="text-tekimax-gold font-bold">2030:</span>
+                    <span className="opacity-60">Full model portability, letting learners own and export their trained cognitive profiles.</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+
+          <div className="mt-12 pt-8 border-t border-tekimax-dark/10">
+            <a href="https://adaptivelearning.tekimax.com" target="_blank" className="w-full block text-center py-5 bg-tekimax-teal text-white rounded-xl font-bold uppercase tracking-widest text-xs hover:bg-tekimax-dark transition-all shadow-xl hover:shadow-2xl hover:-translate-y-1">
+              Launch Learning Engine
+            </a>
+          </div>
+
+        </div>
+      </div>
+
+      {/* Side Sheet Content - Startup */}
+      <div className={`fixed inset-y-0 right-0 w-full md:w-[60%] lg:w-[50%] bg-[#F9F8F4] z-50 shadow-2xl transform transition-transform duration-500 ease-spring ${activeSheet === 'startup' ? 'translate-x-0' : 'translate-x-full'} overflow-y-auto`}>
+        <div className="p-10 md:p-16">
+          <button onClick={() => setActiveSheet(null)} className="absolute top-8 right-8 w-10 h-10 rounded-full bg-tekimax-dark/5 hover:bg-tekimax-dark/10 flex items-center justify-center transition-colors">
+            <svg className="w-5 h-5 text-tekimax-dark" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+          <span className="text-tekimax-gold font-bold tracking-widest uppercase text-xs mb-4 block">The New Industrial Evolution</span>
+          <div className="mb-8">
+            <img src="/images/adaptive-startup.png" alt="Adaptive Startup Logo" className="h-12 w-auto" />
+          </div>
+          <h2 className="font-serif text-5xl md:text-6xl text-tekimax-dark mb-6">Adaptive <span className="text-tekimax-gold">Startup.</span></h2>
+          <p className="text-xl text-tekimax-dark/60 font-light leading-relaxed mb-10">
+            AI represents the same opportunity we had at the dawn of computing, to activate an ecosystem of creators, builders, and technologies that will transform productivity, discovery, and entirely new business models.
+          </p>
+
+          <div className="space-y-12">
+            <div>
+              <h4 className="text-sm font-bold text-tekimax-gold uppercase tracking-widest mb-3 border-b border-tekimax-gold/20 pb-2">Platform Capabilities</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-white p-5 rounded-xl shadow-sm border border-tekimax-dark/5">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="w-2 h-2 rounded-full bg-tekimax-gold"></div>
+                    <h5 className="font-bold text-tekimax-dark text-base">Strategic Clarity</h5>
+                  </div>
+                  <p className="text-xs text-tekimax-dark/60 ml-5 leading-relaxed">
+                    Auto-generated <strong>Business Canvas</strong> and OKRs.
+                  </p>
+                </div>
+                <div className="bg-white p-5 rounded-xl shadow-sm border border-tekimax-dark/5">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="w-2 h-2 rounded-full bg-tekimax-gold"></div>
+                    <h5 className="font-bold text-tekimax-dark text-base">Market Recon</h5>
+                  </div>
+                  <p className="text-xs text-tekimax-dark/60 ml-5 leading-relaxed">
+                    AI Agents for deep <strong>Competitor Analysis</strong> and TAM/SAM/SOM.
+                  </p>
+                </div>
+                <div className="bg-white p-5 rounded-xl shadow-sm border border-tekimax-dark/5">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="w-2 h-2 rounded-full bg-tekimax-gold"></div>
+                    <h5 className="font-bold text-tekimax-dark text-base">Financial Modeling</h5>
+                  </div>
+                  <p className="text-xs text-tekimax-dark/60 ml-5 leading-relaxed">
+                    Risk-adjusted <strong>Revenue Projections</strong> and SAFE management.
+                  </p>
+                </div>
+                <div className="bg-white p-5 rounded-xl shadow-sm border border-tekimax-dark/5">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="w-2 h-2 rounded-full bg-tekimax-gold"></div>
+                    <h5 className="font-bold text-tekimax-dark text-base">Pitch Engineering</h5>
+                  </div>
+                  <p className="text-xs text-tekimax-dark/60 ml-5 leading-relaxed">
+                    Data-driven <strong>Pitch Deck</strong> generation.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <div className="mt-12 pt-8 border-t border-tekimax-dark/10">
+            <a href="https://adaptivestartup.io/" target="_blank" className="w-full block text-center py-5 bg-tekimax-gold text-white rounded-xl font-bold uppercase tracking-widest text-xs hover:bg-tekimax-navy transition-all shadow-xl hover:shadow-2xl hover:-translate-y-1">
+              Launch Startup Engine
+            </a>
+          </div>
+        </div>
+      </div>
+
+
+      {/* Self-Adaptive Engine SECTION */}
+      <section id="exoskeleton" className="py-32 px-6 bg-white border-b border-tekimax-dark/5 scroll-mt-20">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center max-w-3xl mx-auto mb-20 reveal-on-scroll">
+            <div className="flex items-center justify-center gap-4 mb-6">
+              <div className="h-px w-16 bg-tekimax-gold/30"></div>
+              <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-tekimax-gold block">Our Research Focus</span>
+              <div className="h-px w-16 bg-tekimax-gold/30"></div>
+            </div>
+            <h2 className="font-serif text-5xl md:text-7xl text-tekimax-dark mb-8 leading-tight">
+              Self-Adaptive <span className="italic text-tekimax-gold">Engine.</span>
+            </h2>
+            <p className="text-xl text-tekimax-dark/60 font-light leading-relaxed">
+              Our research is driven by a single purpose: to build systems that <strong>collaborate, not replace</strong>. We utilize AI as <strong>augmentation</strong>, preserving human agency, curiosity, and ingenuity. The Engine adapts to you in real-time, serving as a partner in <strong>innovation and discovery</strong>, ensuring that as machines evolve, the Human remains the architect.
+            </p>
+          </div>
+
+          <div className="max-w-4xl mx-auto reveal-on-scroll delay-200">
+            <div className="relative rounded-[2rem] overflow-hidden shadow-2xl group aspect-video bg-white border border-stone-200">
+              <div className="absolute inset-0 flex items-center justify-center">
+                <img src="/images/research-us-flag.png" alt="Founders with Self-Adaptive Engine" className="w-full h-full object-cover object-center scale-100" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section >
+
+      {/* CTA / Research Section */}
+      <section id="research-sec" className="py-40 px-6 bg-tekimax-navy text-white relative overflow-hidden scroll-mt-20">
+        <div className="absolute inset-0 bg-grid-dots opacity-5"></div>
+        <div className="max-w-7xl mx-auto text-center relative z-10">
+          <div className="max-w-3xl mx-auto reveal-on-scroll">
+            <h2 className="font-serif text-5xl md:text-8xl mb-6 leading-tight">Partner <span className="italic text-tekimax-gold">With Us.</span></h2>
+            <p className="text-xl text-white/50 mb-12 font-light leading-relaxed max-w-2xl mx-auto">
+              Join us on our frontier mission. Whether you are a research institution partnering on clinical validation or an organization looking to <strong>Trial</strong> our platform or our SDK within your organization, we want to build with you.
+            </p>
+
+            <div className="flex flex-wrap justify-center gap-6 mb-12">
+              <button
+                onClick={() => setActiveForm('partnership')}
+                className={`px-8 py-4 rounded-full font-bold uppercase tracking-widest text-xs transition-all ${activeForm === 'partnership' ? 'bg-tekimax-gold text-white shadow-xl scale-105' : 'bg-white/10 text-white hover:bg-white/20'}`}
+              >
+                Research Partnership
+              </button>
+              <button
+                onClick={() => setActiveForm('licensing')}
+                className={`px-8 py-4 rounded-full font-bold uppercase tracking-widest text-xs transition-all ${activeForm === 'licensing' ? 'bg-tekimax-gold text-white shadow-xl scale-105' : 'bg-white/10 text-white hover:bg-white/20'}`}
+              >
+                Platform Trial
+              </button>
+              <button
+                onClick={() => setActiveForm('hackathon')}
+                className={`px-8 py-4 rounded-full font-bold uppercase tracking-widest text-xs transition-all ${activeForm === 'hackathon' ? 'bg-tekimax-gold text-white shadow-xl scale-105' : 'bg-white/10 text-white hover:bg-white/20'}`}
+              >
+                Sponsor Hackathon
+              </button>
+            </div>
+
+            {activeForm === 'partnership' && (
+              <form className="max-w-xl mx-auto space-y-4 animate-fade-in-up bg-white/5 p-8 rounded-3xl border border-white/10">
+                <div className="text-left mb-6">
+                  <h4 className="text-tekimax-gold font-serif text-2xl mb-2">Research Partnership</h4>
+                  <p className="text-white/40 text-sm">For institutions with clinical experience and capital.</p>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <input type="text" placeholder="Institution Name" className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-tekimax-gold w-full" />
+                  <input type="text" placeholder="Contact Person" className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-tekimax-gold w-full" />
+                </div>
+                <textarea placeholder="Describe your experience in this industry..." className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-tekimax-gold h-24"></textarea>
+                <select className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white/70 focus:outline-none focus:border-tekimax-gold">
+                  <option value="" disabled selected>Available Capital / Grant Funding</option>
+                  <option value="seed">&lt; $100k</option>
+                  <option value="seriesA">$100k - $1M</option>
+                  <option value="seriesB">$1M+</option>
+                </select>
+                <button className="w-full bg-tekimax-gold text-white font-bold py-4 rounded-xl hover:brightness-110 transition-all shadow-lg uppercase tracking-widest text-xs mt-4">
+                  Submit Inquiry
+                </button>
+              </form>
+            )}
+
+            {activeForm === 'licensing' && (
+              <form className="max-w-xl mx-auto space-y-4 animate-fade-in-up bg-white/5 p-8 rounded-3xl border border-white/10">
+                <div className="text-left mb-6">
+                  <h4 className="text-tekimax-gold font-serif text-2xl mb-2">Platform Trial</h4>
+                  <p className="text-white/40 text-sm">Trial the Adaptive Startup Platform or SDK for your organization.</p>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <input type="text" placeholder="Company Name" className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-tekimax-gold w-full" />
+                  <input type="email" placeholder="Work Email" className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-tekimax-gold w-full" />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <select className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white/70 focus:outline-none focus:border-tekimax-gold">
+                    <option value="" disabled selected>Company Size (Employees)</option>
+                    <option value="1-10">1-10</option>
+                    <option value="11-50">11-50</option>
+                    <option value="51-200">51-200</option>
+                    <option value="200+">200+</option>
+                  </select>
+                  <select className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white/70 focus:outline-none focus:border-tekimax-gold">
+                    <option value="" disabled selected>Annual Revenue</option>
+                    <option value="pre-rev">Pre-Revenue</option>
+                    <option value="<1M">&lt; $1M</option>
+                    <option value="1M-10M">$1M - $10M</option>
+                    <option value="10M+">$10M+</option>
+                  </select>
+                </div>
+                <button className="w-full bg-tekimax-gold text-white font-bold py-4 rounded-xl hover:brightness-110 transition-all shadow-lg uppercase tracking-widest text-xs mt-4">
+                  Request Trial
+                </button>
+              </form>
+            )}
+
+            {activeForm === 'hackathon' && (
+              <form className="max-w-xl mx-auto space-y-4 animate-fade-in-up bg-white/5 p-8 rounded-3xl border border-white/10">
+                <div className="text-left mb-6">
+                  <h4 className="text-tekimax-gold font-serif text-2xl mb-2">Sponsor a Hackathon</h4>
+                  <p className="text-white/40 text-sm">Empower innovation by sponsoring our next engineering event.</p>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <input type="text" placeholder="Organization Name" className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-tekimax-gold w-full" />
+                  <input type="text" placeholder="Contact Person" className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-tekimax-gold w-full" />
+                </div>
+                <input type="email" placeholder="Email Address" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-tekimax-gold" />
+                <div className="grid grid-cols-2 gap-4">
+                  <input type="text" placeholder="Hackathon Date" onFocus={(e) => (e.target.type = 'date')} onBlur={(e) => (e.target.type = 'text')} className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-tekimax-gold w-full" />
+                  <input type="number" placeholder="Est. Attendees" className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-tekimax-gold w-full" />
+                </div>
+                <input type="text" placeholder="Location (Country, State)" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-tekimax-gold" />
+                <textarea placeholder="Tell us about your organization and goals..." className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-tekimax-gold h-24"></textarea>
+                <button className="w-full bg-tekimax-gold text-white font-bold py-4 rounded-xl hover:brightness-110 transition-all shadow-lg uppercase tracking-widest text-xs mt-4">
+                  Inquire about Sponsorship
+                </button>
+              </form>
+            )}
+
+            {activeForm === 'contact' && (
+              <form onSubmit={handleContactSubmit} className="max-w-xl mx-auto space-y-4 animate-fade-in-up bg-white/5 p-8 rounded-3xl border border-white/10 relative overflow-hidden">
+                {contactFormStatus === 'success' ? (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-tekimax-navy/95 z-10 p-6 text-center animate-fade-in">
+                    <div className="w-16 h-16 bg-tekimax-gold rounded-full flex items-center justify-center mb-4">
+                      <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
+                    </div>
+                    <h4 className="text-2xl text-white font-serif mb-2">Message Sent</h4>
+                    <p className="text-white/60 text-sm mb-6">Thank you for reaching out. We will respond shortly.</p>
+                    <button type="button" onClick={() => setActiveForm(null)} className="text-tekimax-gold text-xs uppercase tracking-widest font-bold hover:text-white transition-colors">Close Form</button>
+                  </div>
+                ) : null}
+
+                <div className="text-left mb-6">
+                  <h4 className="text-tekimax-gold font-serif text-2xl mb-2">Contact Us</h4>
+                  <p className="text-white/40 text-sm">Send us a message and we'll get back to you shortly.</p>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <input required name="name" value={contactData.name} onChange={handleContactChange} type="text" placeholder="Name" className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-tekimax-gold w-full" />
+                  <input required name="email" value={contactData.email} onChange={handleContactChange} type="email" placeholder="Email" className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-tekimax-gold w-full" />
+                </div>
+                <input name="subject" value={contactData.subject} onChange={handleContactChange} type="text" placeholder="Subject" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-tekimax-gold" />
+                <textarea required name="message" value={contactData.message} onChange={handleContactChange} placeholder="Your message..." className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-tekimax-gold h-32"></textarea>
+                <button disabled={contactFormStatus === 'submitting'} className="w-full bg-tekimax-gold text-white font-bold py-4 rounded-xl hover:brightness-110 transition-all shadow-lg uppercase tracking-widest text-xs mt-4 disabled:opacity-50 disabled:cursor-wait">
+                  {contactFormStatus === 'submitting' ? 'Sending...' : 'Send Message'}
+                </button>
+                {contactFormStatus === 'error' && <p className="text-red-400 text-xs text-center mt-2">Failed to send message. Please try again.</p>}
+              </form>
+            )}
+          </div>
+        </div>
+      </section >
+
+      <footer className="py-24 px-6 bg-[#efeeea] text-tekimax-dark border-t border-tekimax-dark/5">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col lg:flex-row justify-between items-start gap-16 mb-20">
+            <div>
+              <div className="mb-8">
+                <img src="/images/tekimax-logo-darkRGB-1.png" alt="Tekimax Logo" className="h-10 w-auto" />
+              </div>
+              <p className="text-tekimax-dark/60 text-xs max-w-sm leading-relaxed font-light">
+                Join us on our frontier mission. Whether you are a research institution or an organization looking to <strong>Trial</strong> our platform or our SDK within your organization, we want to build with you.
+              </p>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-12 lg:gap-24">
+              <div>
+                <h5 className="text-[10px] font-bold uppercase tracking-[0.3em] text-tekimax-gold mb-8">Platforms</h5>
+                <ul className="space-y-4 text-sm font-medium text-tekimax-dark/60">
+                  <li><a href="#platforms" className="hover:text-tekimax-gold transition-colors">Learning Engine</a></li>
+                  <li><a href="https://adaptivestartup.io/" className="hover:text-tekimax-gold transition-colors" target="_blank">Adaptive Startup</a></li>
+                </ul>
+              </div>
+              <div>
+                <h5 className="text-[10px] font-bold uppercase tracking-[0.3em] text-tekimax-gold mb-8">Research</h5>
+                <ul className="space-y-4 text-sm font-medium text-tekimax-dark/60">
+                  <li><a href="#engine" className="hover:text-tekimax-gold transition-colors">Self-Adaptive Engine</a></li>
+                  <li className="hover:text-tekimax-gold cursor-pointer transition-colors">Clinical Studies</li>
+                </ul>
+              </div>
+              <div>
+                <h5 className="text-[10px] font-bold uppercase tracking-[0.3em] text-tekimax-gold mb-8">Gov Contract</h5>
+                <ul className="space-y-4 text-sm font-medium text-tekimax-dark/60">
+                  <li><span className="block text-[10px] uppercase tracking-wider opacity-70">UEI</span>MKHHA23AJ9S8</li>
+                  <li><span className="block text-[10px] uppercase tracking-wider opacity-70">CAGE</span>7CCP</li>
+
+                </ul>
+              </div>
+              <div>
+                <h5 className="text-[10px] font-bold uppercase tracking-[0.3em] text-tekimax-gold mb-8">Partner Program</h5>
+                <div className="mt-0">
+                  <a href="https://www.hiringourheroes.org/4plus1/" target="_blank" rel="noreferrer" className="block w-24 hover:opacity-80 transition-opacity">
+                    <img src="/4+1-badge-li-tw.jpg" alt="Hiring Our Heroes 4+1 Commitment" className="w-full h-auto rounded-full" />
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+
+          <div className="pt-12 border-t border-tekimax-dark/10 flex flex-col md:flex-row justify-between items-center gap-6 text-[11px] uppercase tracking-widest font-bold text-tekimax-dark/30">
+            <div className="flex items-center gap-3">
+              <img src="/images/us-flag.png" alt="Made in USA" className="h-2.5 w-auto rounded-sm grayscale hover:grayscale-0 transition-all" />
+              <p>© 2025 TEKIMAX Technologies. Engineering for Good.</p>
+            </div>
+            <div className="flex gap-12">
+              <a href="https://www.linkedin.com/company/tekimax-sfg" target="_blank" rel="noreferrer" className="hover:text-tekimax-navy cursor-pointer transition-colors">LinkedIn</a>
+              <a href="/privacy" className="hover:text-tekimax-navy cursor-pointer transition-colors">Privacy Policy</a>
+              <a href="/terms" className="hover:text-tekimax-navy cursor-pointer transition-colors">Terms of Service</a>
+            </div>
+          </div>
+        </div>
+      </footer >
+    </div >
+  );
+};
+
+export default App;

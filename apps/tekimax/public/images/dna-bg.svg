@@ -1,0 +1,35 @@
+<svg width="400" height="400" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="dnaGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:0.6" />
+      <stop offset="100%" style="stop-color:#FFFFFF;stop-opacity:0.1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Stylized DNA Helix Pattern -->
+  <path d="M50 50 Q100 150 50 250 T50 450" stroke="url(#dnaGradient)" stroke-width="2" fill="none" opacity="0.6" />
+  <path d="M150 50 Q100 150 150 250 T150 450" stroke="url(#dnaGradient)" stroke-width="2" fill="none" opacity="0.6" />
+  
+  <path d="M250 50 Q300 150 250 250 T250 450" stroke="url(#dnaGradient)" stroke-width="2" fill="none" opacity="0.4" />
+  <path d="M350 50 Q300 150 350 250 T350 450" stroke="url(#dnaGradient)" stroke-width="2" fill="none" opacity="0.4" />
+  
+  <!-- Connecting Rungs -->
+  <line x1="50" y1="100" x2="150" y2="100" stroke="url(#dnaGradient)" stroke-width="1" opacity="0.3" />
+  <line x1="50" y1="140" x2="150" y2="140" stroke="url(#dnaGradient)" stroke-width="1" opacity="0.3" />
+  <line x1="50" y1="180" x2="150" y2="180" stroke="url(#dnaGradient)" stroke-width="1" opacity="0.3" />
+  <line x1="50" y1="220" x2="150" y2="220" stroke="url(#dnaGradient)" stroke-width="1" opacity="0.3" />
+  
+  <line x1="250" y1="80" x2="350" y2="80" stroke="url(#dnaGradient)" stroke-width="1" opacity="0.2" />
+  <line x1="250" y1="120" x2="350" y2="120" stroke="url(#dnaGradient)" stroke-width="1" opacity="0.2" />
+  <line x1="250" y1="160" x2="350" y2="160" stroke="url(#dnaGradient)" stroke-width="1" opacity="0.2" />
+  
+  <!-- Subtle Nodes -->
+  <circle cx="85" cy="150" r="3" fill="#FFFFFF" opacity="0.3" />
+  <circle cx="115" cy="250" r="2" fill="#FFFFFF" opacity="0.3" />
+  <circle cx="275" cy="120" r="2" fill="#FFFFFF" opacity="0.2" />
+  <circle cx="325" cy="180" r="2" fill="#FFFFFF" opacity="0.2" />
+
+  <!-- Floating Elements for depth -->
+  <circle cx="200" cy="200" r="50" stroke="#FFFFFF" stroke-width="0.5" stroke-dasharray="4 4" fill="none" opacity="0.1" />
+  <path d="M180 200 L220 200 M200 180 L200 220" stroke="#FFFFFF" stroke-width="0.5" opacity="0.1" />
+</svg>

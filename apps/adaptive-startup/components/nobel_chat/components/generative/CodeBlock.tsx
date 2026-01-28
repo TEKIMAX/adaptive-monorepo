@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
 import { Copy, Check, Terminal, ChevronDown, ChevronUp } from 'lucide-react';
 import { toast } from 'sonner';
+import ActionCard from './ActionCard';
+import OKRCard from './OKRCard';
 
 interface CodeBlockProps {
     className?: string;
     children: React.ReactNode;
     inline?: boolean;
+    onNavigate?: (page: string) => void;
 }
 
-const CodeBlock: React.FC<CodeBlockProps> = ({ className, children, inline }) => {
+const CodeBlock: React.FC<CodeBlockProps> = ({ className, children, inline, onNavigate }) => {
     const [isCopied, setIsCopied] = useState(false);
     const [isExpanded, setIsExpanded] = useState(false);
 
@@ -24,6 +27,70 @@ const CodeBlock: React.FC<CodeBlockProps> = ({ className, children, inline }) =>
     const language = match ? match[1] : 'text';
     const isJson = language === 'json';
 
+    // Attempt to render UI components for specific JSON structures
+    if (isJson) {
+        try {
+            const content = String(children).replace(/\n/g, '');
+            const parsed = JSON.parse(content);
+
+            // Check for ActionCard structure
+            if (parsed.title && parsed.description && parsed.buttonLabel && parsed.navigationTarget) {
+                return (
+                    <ActionCard
+                        title={parsed.title}
+                        description={parsed.description}
+                        buttonLabel={parsed.buttonLabel}
+                        navigationTarget={parsed.navigationTarget}
+                        onNavigate={onNavigate}
+                    />
+                );
+            }
+
+            // Check for OKR structure
+            if (parsed.keyResults && Array.isArray(parsed.keyResults) && (parsed.objective || parsed.title)) {
+                // Calculate progress if not provided
+                let progress = parsed.progress;
+                if (progress === undefined && parsed.keyResults.length > 0) {
+                    const totalProgress = parsed.keyResults.reduce((acc: number, kr: any) => acc + (kr.progress || 0), 0);
+                    progress = Math.round(totalProgress / parsed.keyResults.length);
+                }
+
+                // Map Key Results
+                const mappedKRs = parsed.keyResults.map((kr: any) => {
+                    // Determine status
+                    let status: 'completed' | 'in-progress' | 'pending' = 'pending';
+                    if (kr.progress >= 100) status = 'completed';
+                    else if (kr.progress > 0) status = 'in-progress';
+
+                    return {
+                        label: kr.description || kr.label || "Key Result",
+                        target: `${kr.target}${kr.unit || ''}`,
+                        current: `${kr.progress}${kr.unit || ''}`,
+                        status: status
+                    };
+                });
+
+                // Format Overall Status
+                let statusLabel = parsed.status || "In Progress";
+                if (statusLabel === "NOT_STARTED") statusLabel = "Not Started";
+                if (statusLabel === "IN_PROGRESS") statusLabel = "On Track"; // Default to positive mapping for demo
+
+                return (
+                    <OKRCard
+                        objective={parsed.objective || parsed.title}
+                        timeline={parsed.title || "Quarterly Goal"} // Use title as timeline/header if objective is separate
+                        status={statusLabel}
+                        progress={progress || 0}
+                        keyResults={mappedKRs}
+                    />
+                );
+            }
+
+        } catch (e) {
+            // Not valid JSON or doesn't match schema, fall through to default code block
+        }
+    }
+
     const handleCopy = () => {
         navigator.clipboard.writeText(String(children));
         setIsCopied(true);
@@ -31,6 +98,29 @@ const CodeBlock: React.FC<CodeBlockProps> = ({ className, children, inline }) =>
         setTimeout(() => setIsCopied(false), 2000);
     };
 
+    // Special handling for plain text/markdown blocks (Light Theme)
+    const isText = ['text', 'txt', 'markdown', 'md'].includes(language);
+
+    if (isText) {
+        return (
+            <div className="my-4 relative group">
+                <div className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                    <button
+                        onClick={handleCopy}
+                        className="p-1.5 bg-white border border-stone-200 hover:border-nobel-gold rounded-md shadow-sm text-stone-400 hover:text-nobel-gold transition-colors"
+                        title="Copy content"
+                    >
+                        {isCopied ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+                    </button>
+                </div>
+                <div className="bg-stone-50 border border-stone-100 rounded-xl p-5 text-sm text-stone-700 leading-relaxed font-serif shadow-sm whitespace-pre-wrap">
+                    {children}
+                </div>
+            </div>
+        );
+    }
+
+    // Default Dark Terminal for Code
     return (
         <div className="my-6 rounded-xl overflow-hidden bg-[#1e1e1e] border border-white/10 shadow-lg group">
             {/* Header */}

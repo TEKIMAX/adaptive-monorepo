@@ -1,0 +1,62 @@
+@import url('https://fonts.googleapis.com/css2?family=Barlow:wght@100;200;300;400;500;600;700;800;900&family=Sora:wght@100;200;300;400;500;600;700;800&display=swap');
+@import "tailwindcss";
+@config "./tailwind.config.js";
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 80px;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+body {
+  background-color: #F9F8F4;
+  color: #1a1a1a;
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+.text-balance {
+  text-wrap: balance;
+}
+
+.bg-grid-dots {
+  background-image: radial-gradient(#e5e7eb 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+.bg-dot-white {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* Scroll Reveal Classes */
+.reveal-on-scroll {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.reveal-on-scroll.revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media print {
+
+  html,
+  body {
+    display: none !important;
+  }
+
+  nav,
+  footer,
+  button {
+    display: none !important;
+  }
+}

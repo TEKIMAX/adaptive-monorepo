@@ -12,7 +12,6 @@ export * from "./aiModules/adaptiveActions";
 export * from "./aiModules/documentActions";
 export * from "./aiModules/reportActions";
 export * from "./aiModules/analysisActions";
-export * from "./aiModules/testActions";
 
 // Re-export internal services if needed
 export { callOllama, callOllamaInternal } from "./ollamaService";

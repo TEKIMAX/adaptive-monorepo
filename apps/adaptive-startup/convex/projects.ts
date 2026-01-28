@@ -851,3 +851,53 @@ export const getPublicBySlug = query({
         };
     }
 });
+
+export const updateFinancialSnapshot = mutation({
+    args: {
+        projectId: v.id("projects"),
+        cac: v.number(),
+        ltv: v.number(),
+        arpu: v.number(),
+        revenue: v.string(),
+        burnRate: v.string(),
+        margin: v.string(),
+        signature: v.optional(v.string()),
+        publicKey: v.optional(v.string())
+    },
+    handler: async (ctx, args) => {
+        const { project, orgId, user } = await verifyProjectAccess(ctx, args.projectId);
+
+        const settings = JSON.parse(project.revenueModelSettings || "{}");
+        const updatedSettings = {
+            ...settings,
+            cac: args.cac,
+            ltv: args.ltv,
+            arpu: args.arpu,
+            revenue: args.revenue,
+            burnRate: args.burnRate,
+            margin: args.margin,
+            updatedAt: Date.now()
+        };
+
+        await ctx.db.patch(args.projectId, {
+            revenueModelSettings: JSON.stringify(updatedSettings),
+            updatedAt: Date.now()
+        });
+
+        // Log Activity with Signature
+        await ctx.db.insert("activity_log", {
+            projectId: args.projectId,
+            orgId,
+            userId: user.tokenIdentifier,
+            userName: user.name || "Unknown User",
+            action: "UPDATE",
+            entityType: "financial_model",
+            entityId: args.projectId as string,
+            entityName: "Financial Snapshot",
+            changes: "Updated financial metrics via AI Suggestion",
+            signature: args.signature,
+            publicKey: args.publicKey,
+            timestamp: Date.now()
+        });
+    }
+});

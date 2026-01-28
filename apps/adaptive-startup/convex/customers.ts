@@ -232,9 +232,12 @@ export const bulkAddInterviews = mutation({
             customerStatus: v.string(),
             customData: v.string(),
             willingnessToPay: v.optional(v.string())
-        }))
+        })),
+        signature: v.optional(v.string()),
+        publicKey: v.optional(v.string())
     },
     handler: async (ctx: any, args: any) => {
+        const identity = await requireAuth(ctx);
         const project = await getProjectSafe(ctx, args.projectId);
         if (!project) throw new Error("Project not found");
 
@@ -248,6 +251,27 @@ export const bulkAddInterviews = mutation({
                 createdAt: Date.now()
             })
         ));
+
+        // Log Activity with Signature
+        const user = await ctx.db
+            .query("users")
+            .withIndex("by_token", (q: any) => q.eq("tokenIdentifier", identity.subject))
+            .unique();
+
+        await ctx.db.insert("activity_log", {
+            projectId: project._id,
+            orgId: project.orgId,
+            userId: identity.subject,
+            userName: user?.name || "Unknown User",
+            action: "CREATE",
+            entityType: "customer_profiles",
+            entityId: project._id, // Associated with project
+            entityName: `${args.interviews.length} Customer Profiles`,
+            changes: `Created ${args.interviews.length} customer profiles via AI Suggestion`,
+            signature: args.signature,
+            publicKey: args.publicKey,
+            timestamp: Date.now()
+        });
     }
 });
 

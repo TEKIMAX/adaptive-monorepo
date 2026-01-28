@@ -298,3 +298,61 @@ export const getDebugDataByOrg = query({
         return { config, competitors };
     },
 });
+
+export const saveSWOTAsCompetitor = mutation({
+    args: {
+        projectId: v.string(),
+        competitorName: v.string(),
+        swotData: v.object({
+            strengths: v.array(v.string()),
+            weaknesses: v.array(v.string()),
+            opportunities: v.array(v.string()),
+            threats: v.array(v.string())
+        }),
+        signature: v.optional(v.string()),
+        publicKey: v.optional(v.string())
+    },
+    handler: async (ctx: any, args: any) => {
+        const identity = await requireAuth(ctx);
+        const project = await getProjectSafe(ctx, args.projectId);
+        if (!project) throw new Error("Project not found");
+
+        const attributesData = JSON.stringify({
+            "Strengths": args.swotData.strengths.join(", "),
+            "Weaknesses": args.swotData.weaknesses.join(", "),
+            "Opportunities": args.swotData.opportunities.join(", "),
+            "Threats": args.swotData.threats.join(", ")
+        });
+
+        const competitorId = await ctx.db.insert("competitors", {
+            projectId: project._id,
+            orgId: project.orgId,
+            name: args.competitorName,
+            attributesData,
+            tags: ["AI Analyzed", "SWOT"]
+        });
+
+        // Log Activity with Signature
+        const user = await ctx.db
+            .query("users")
+            .withIndex("by_token", (q: any) => q.eq("tokenIdentifier", identity.subject))
+            .unique();
+
+        await ctx.db.insert("activity_log", {
+            projectId: project._id,
+            orgId: project.orgId,
+            userId: identity.subject,
+            userName: user?.name || "Unknown User",
+            action: "CREATE",
+            entityType: "competitor",
+            entityId: competitorId,
+            entityName: args.competitorName,
+            changes: `Created SWOT analysis for ${args.competitorName} via AI Suggestion`,
+            signature: args.signature,
+            publicKey: args.publicKey,
+            timestamp: Date.now()
+        });
+
+        return competitorId;
+    }
+});

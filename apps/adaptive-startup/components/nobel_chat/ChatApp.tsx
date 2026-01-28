@@ -19,6 +19,7 @@ import { useUpdateChatTitle } from "../../hooks/useUpdate";
 import { useDeleteChat } from "../../hooks/useDelete";
 import { Id } from "../../convex/_generated/dataModel";
 import { marked } from 'marked';
+// import { useLive } from '../../contexts/LiveContext'; // Import properly
 
 import ChatHome from './ChatHome';
 
@@ -33,6 +34,29 @@ interface ChatAppProps {
   orgId?: string;
   userId?: string;
 }
+
+// Helper Component for Voice Toggle
+{/*
+const LiveVoiceToggle = () => {
+  const { isLivePanelOpen, toggleLivePanel } = useLive();
+
+  if (!toggleLivePanel) return null;
+
+  return (
+    <button
+      onClick={toggleLivePanel}
+      className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all duration-300 ${isLivePanelOpen
+        ? 'bg-red-50 text-red-600 border-red-200 shadow-inner'
+        : 'bg-white text-stone-600 border-stone-200 hover:bg-stone-50 hover:text-stone-900 shadow-sm'
+        }`}
+      title="Toggle Live Voice Mode"
+    >
+      <div className={`w-2 h-2 rounded-full ${isLivePanelOpen ? 'bg-red-600 animate-pulse' : 'bg-stone-400'}`} />
+      <span className="text-xs font-bold uppercase tracking-wider">{isLivePanelOpen ? 'Live' : 'Voice'}</span>
+    </button>
+  );
+};
+*/}
 
 const ChatApp: React.FC<ChatAppProps> = ({ onNavigate, currentView, allProjects, currentProjectId, onSwitchProject, onNewProject, allowedPages, orgId, userId }) => {
   const [activePage, setActivePage] = useState<PageType>(() => {
@@ -148,19 +172,34 @@ const ChatApp: React.FC<ChatAppProps> = ({ onNavigate, currentView, allProjects,
   const [isLoading, setIsLoading] = useState(false);
 
   // Convert Convex messages to UI Message format
-  const messages: Message[] = (messagesData || []).map(m => ({
-    id: m._id,
-    role: m.role as 'user' | 'assistant',
-    content: m.content || '',
-    reasoning: m.reasoning,
-    timestamp: new Date(m.createdAt),
-    toolResults: m.toolResults ? JSON.parse(m.toolResults) : undefined,
-    groundingMetadata: m.groundingMetadata ? JSON.parse(m.groundingMetadata).groundingChunks?.map((c: any) => ({
-      title: c.web?.title || 'Source',
-      uri: c.web?.uri || '#'
-    })) : undefined
-    // Accuracy score logic omitted or needs parsing from content if we still do that
-  }));
+  const messages: Message[] = (messagesData || []).map(m => {
+    let content = m.content || '';
+    let reasoning = m.reasoning;
+
+    // Check for <thinking> tags in content if reasoning is empty (or even if not, we might append?)
+    // This allows the AI to output thinking in the stream which is then moved to the UI
+    const thinkingMatch = content.match(/<thinking>([\s\S]*?)<\/thinking>/);
+    if (thinkingMatch) {
+      const thinkingContent = thinkingMatch[1].trim();
+      reasoning = reasoning ? `${reasoning}\n\n${thinkingContent}` : thinkingContent;
+      // Remove thinking from content to hide it from main view
+      content = content.replace(/<thinking>[\s\S]*?<\/thinking>/, '').trim();
+    }
+
+    return {
+      id: m._id,
+      role: m.role as 'user' | 'assistant',
+      content: content,
+      reasoning: reasoning,
+      timestamp: new Date(m.createdAt),
+      toolResults: m.toolResults ? JSON.parse(m.toolResults) : undefined,
+      groundingMetadata: m.groundingMetadata ? JSON.parse(m.groundingMetadata).groundingChunks?.map((c: any) => ({
+        title: c.web?.title || 'Source',
+        uri: c.web?.uri || '#'
+      })) : undefined
+      // Accuracy score logic omitted or needs parsing from content if we still do that
+    };
+  });
 
   // If streaming, we might want to optimistically show "thinking" or handle partials.
   // Convex query updates automatically, so "streaming" text will appear chunk by chunk as DB updates!
@@ -335,7 +374,6 @@ const ChatApp: React.FC<ChatAppProps> = ({ onNavigate, currentView, allProjects,
         chatId: chatId!,
         content: text,
         pageContext: contextToUse, // Use the auto-detected or current context
-        modelName: 'gemini-2.5-flash-image',
         projectId: currentProjectId ? currentProjectId as unknown as string : undefined
       });
 
@@ -431,12 +469,17 @@ const ChatApp: React.FC<ChatAppProps> = ({ onNavigate, currentView, allProjects,
           />
         </div>
 
-        <button
-          onClick={handleNewChat}
-          className="flex items-center gap-2 px-3 py-1.5 bg-white border border-stone-200 text-stone-600 rounded-lg hover:bg-stone-50 hover:text-stone-900 text-sm font-medium shadow-sm transition-all"
-        >
-          <Plus size={16} /> New Chat
-        </button>
+        <div className="flex items-center gap-3">
+          {/* Live Voice Button */}
+          {/* <LiveVoiceToggle /> */}
+
+          <button
+            onClick={handleNewChat}
+            className="flex items-center gap-2 px-3 py-1.5 bg-white border border-stone-200 text-stone-600 rounded-lg hover:bg-stone-50 hover:text-stone-900 text-sm font-medium shadow-sm transition-all"
+          >
+            <Plus size={16} /> New Chat
+          </button>
+        </div>
       </header>
 
       {/* History Sidebar */}

@@ -93,8 +93,8 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ user, onComplete
     // Check for success redirect
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
-        if (params.get('success') === 'true') {
-            setCurrentStep(5);
+        if (params.get('success') === 'true' || params.get('subscription_success') === 'true') {
+            setCurrentStep(6);
         }
     }, []);
 
@@ -356,7 +356,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ user, onComplete
                                                 disabled={!formData.orgSize || isSubmitting}
                                                 className="group flex items-center justify-center gap-2 bg-stone-900 text-white rounded-full px-8 py-3 font-bold uppercase tracking-widest text-xs hover:bg-stone-800 hover:gap-3 transition-all disabled:opacity-50 disabled:hover:gap-2"
                                             >
-                                                {isSubmitting ? 'Saving...' : 'Plan'} <ChevronRight className="w-4 h-4" />
+                                                {isSubmitting ? 'Saving...' : 'Continue'} <ChevronRight className="w-4 h-4" />
                                             </button>
                                         </div>
                                     </div>
@@ -425,7 +425,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ user, onComplete
                                                 disabled={isSubmitting}
                                                 className="group flex items-center justify-center gap-2 bg-stone-900 text-white rounded-full px-8 py-3 font-bold uppercase tracking-widest text-xs hover:bg-stone-800 hover:gap-3 transition-all disabled:opacity-50 disabled:hover:gap-2"
                                             >
-                                                {isSubmitting ? 'Saving...' : 'Plan'} <ChevronRight className="w-4 h-4" />
+                                                {isSubmitting ? 'Saving...' : 'Continue'} <ChevronRight className="w-4 h-4" />
                                             </button>
                                         </div>
                                     </div>
@@ -473,7 +473,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ user, onComplete
                                                         // Continue with trial
                                                         setIsSubmitting(true);
                                                         setTimeout(() => {
-                                                            setCurrentStep(5);
+                                                            setCurrentStep(6);
                                                             setIsSubmitting(false);
                                                         }, 500);
                                                     }}

@@ -1,5 +1,10 @@
-import React from 'react';
-import { Layers, HelpCircle } from 'lucide-react';
+
+import React, { useState } from 'react';
+import { Layers } from 'lucide-react';
+import { useMutation } from "convex/react";
+import { api } from "../../../../convex/_generated/api";
+import { toast } from 'sonner';
+import ApprovalGuard from './ApprovalGuard';
 
 interface MarketSizingCardProps {
     tam: string;
@@ -8,13 +13,82 @@ interface MarketSizingCardProps {
     tamDescription: string;
     samDescription: string;
     somDescription: string;
+    projectId?: string | null;
+    onSendMessage?: (text: string) => void;
 }
 
 const MarketSizingCard: React.FC<MarketSizingCardProps> = ({
-    tam, sam, som, tamDescription, samDescription, somDescription
+    tam, sam, som, tamDescription, samDescription, somDescription, projectId, onSendMessage
 }) => {
+    const updateMarket = useMutation(api.market.updateMarketWithSignature);
+    const [isSaved, setIsSaved] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const [isDenied, setIsDenied] = useState(false);
+
+    const parseAmount = (val: string) => {
+        const clean = val.replace(/[^0-9.]/g, '');
+        return parseFloat(clean || '0');
+    };
+
+    const handleApprove = async () => {
+        if (!projectId) {
+            toast.error("No project selected to save to.");
+            return;
+        }
+
+        setIsSaving(true);
+        try {
+            // Cryptographic Signing Flow
+            let signature = undefined;
+            let publicKey = undefined;
+
+            try {
+                const { ensureIdentity, signApproval } = await import('../../../../services/crypto');
+                const identity = await ensureIdentity();
+                if (identity.privateKey) {
+                    const contentToSign = JSON.stringify({ tam, sam, som, tamDescription, samDescription, somDescription });
+                    const signedProof = await signApproval(
+                        "market_research",
+                        "sizing_update",
+                        contentToSign,
+                        identity.privateKey
+                    );
+                    signature = signedProof.signature;
+                    publicKey = identity.publicKey;
+                }
+            } catch (cryptoErr) {
+                console.warn("Signing failed, proceeding without proof:", cryptoErr);
+            }
+
+            await updateMarket({
+                projectId: projectId as any,
+                tam: parseAmount(tam),
+                sam: parseAmount(sam),
+                som: parseAmount(som),
+                reportContent: `Analysis Summary:\nTAM: ${tamDescription}\nSAM: ${samDescription}\nSOM: ${somDescription}`,
+                signature,
+                publicKey
+            });
+
+            setIsSaved(true);
+            toast.success("Market research updated (Signed)");
+        } catch (e) {
+            console.error(e);
+            toast.error("Failed to update market research");
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const handleDeny = () => {
+        setIsDenied(true);
+        const rejectionMsg = `I've denied the suggested market sizing (TAM: ${tam}). I suspect the Serviceable Available Market (SAM) of ${sam} might be overly optimistic given our current channel focus. Can you refine these estimates or ask for my specific regional assumptions?`;
+        onSendMessage?.(rejectionMsg);
+        toast.info("Suggestion denied. Follow-up sent to AI.");
+    };
+
     return (
-        <div className="my-6 md:max-w-md w-full">
+        <div className="my-6 md:max-w-md w-full text-left">
             <div className="flex items-center gap-3 mb-4">
                 <div className="p-2 bg-blue-100 rounded-lg text-blue-700">
                     <Layers size={20} />
@@ -25,7 +99,7 @@ const MarketSizingCard: React.FC<MarketSizingCardProps> = ({
                 </div>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-2 mb-4">
                 {/* TAM */}
                 <div className="bg-stone-900 text-white rounded-t-xl p-4 shadow-lg relative overflow-hidden group">
                     <div className="absolute top-0 right-0 p-4 opacity-10">
@@ -61,6 +135,18 @@ const MarketSizingCard: React.FC<MarketSizingCardProps> = ({
                         </div>
                     </div>
                 </div>
+            </div>
+
+            {/* Approval Guard */}
+            <div className="flex justify-end">
+                <ApprovalGuard
+                    onApprove={handleApprove}
+                    onDeny={handleDeny}
+                    isSaved={isSaved}
+                    isSaving={isSaving}
+                    isDenied={isDenied}
+                    approveLabel="Update Market Analysis"
+                />
             </div>
         </div>
     );

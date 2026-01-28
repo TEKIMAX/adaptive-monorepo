@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TEKIMAX | Human-Adaptive AI & Engineering for Good</title>
+  <meta name="description"
+    content="TEKIMAX delivers the Human-Adaptive Engine: responsible AI infrastructure for high-impact environments. Engineering for Good with NIST AI RMF compliance, cryptographic provenance, and verifiable human agency.">
+  <meta name="keywords"
+    content="TEKIMAX, Human-Adaptive Engine, Engineering for Good, Responsible AI, NIST AI RMF, Human-in-the-Loop, HITL, Cryptographic Provenance, Human Agency Scores, Adaptive Software, AI Compliance, Neuro-inclusive AI">
+
+  <!-- Favicon & Icons -->
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="apple-touch-icon" href="/favicon.png">
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://tekimax.com/">
+  <meta property="og:title" content="TEKIMAX | Human-Adaptive AI & Engineering for Good">
+  <meta property="og:description"
+    content="TEKIMAX delivers the Human-Adaptive Engine: responsible AI infrastructure for high-impact environments. Engineering for Good with NIST AI RMF compliance and verifiable human agency.">
+  <meta property="og:image" content="/images/tekimax-logo-darkRGB-1.png">
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:url" content="https://tekimax.com/">
+  <meta property="twitter:title" content="TEKIMAX | Human-Adaptive AI & Engineering for Good">
+  <meta property="twitter:description"
+    content="TEKIMAX delivers the Human-Adaptive Engine: responsible AI infrastructure for high-impact environments. Engineering for Good with NIST AI RMF compliance and verifiable human agency.">
+  <meta property="twitter:image" content="/images/tekimax-logo-darkRGB-1.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Sora:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <script type="importmap">
+{
+  "imports": {
+    "@google/genai": "https://esm.sh/@google/genai@^1.34.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3",
+    "react/": "https://esm.sh/react@^19.2.3/"
+  }
+}
+</script>
+</head>
+
+<body>
+  <div id="root" class="bg-grid-dots min-h-screen"></div>
+  <script type="module" src="/index.tsx"></script>
+  <script>
+    // Disable right-click context menu
+    document.addEventListener('contextmenu', function (e) {
+      e.preventDefault();
+      return false;
+    });
+
+    // Disable keyboard shortcuts for copying
+    document.addEventListener('keydown', function (e) {
+      // Disable Ctrl+U (view source), Ctrl+S (save), Ctrl+P (print), Ctrl+Shift+I (dev tools)
+      if (e.ctrlKey && (e.key === 'u' || e.key === 'U' || e.key === 's' || e.key === 'S')) {
+        e.preventDefault();
+        return false;
+      }
+    });
+  </script>
+</body>
+
+</html>

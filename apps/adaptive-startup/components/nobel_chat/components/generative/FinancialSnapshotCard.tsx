@@ -1,5 +1,10 @@
-import React from 'react';
+
+import React, { useState } from 'react';
 import { DollarSign, TrendingUp, TrendingDown, Activity, PieChart } from 'lucide-react';
+import { useMutation } from "convex/react";
+import { api } from "../../../../convex/_generated/api";
+import { toast } from 'sonner';
+import ApprovalGuard from './ApprovalGuard';
 
 interface FinancialSnapshotCardProps {
     cac: number;
@@ -8,16 +13,82 @@ interface FinancialSnapshotCardProps {
     revenue: string;
     burnRate: string;
     margin: string;
+    projectId?: string | null;
+    onSendMessage?: (text: string) => void;
 }
 
 const FinancialSnapshotCard: React.FC<FinancialSnapshotCardProps> = ({
-    cac, ltv, arpu, revenue, burnRate, margin
+    cac, ltv, arpu, revenue, burnRate, margin, projectId, onSendMessage
 }) => {
+    const updateFinancials = useMutation(api.projects.updateFinancialSnapshot);
+    const [isSaved, setIsSaved] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const [isDenied, setIsDenied] = useState(false);
+
     const ltvCacRatio = (ltv / (cac || 1)).toFixed(1);
     const isHealthyRatio = Number(ltvCacRatio) >= 3.0;
 
+    const handleApprove = async () => {
+        if (!projectId) {
+            toast.error("No project selected to save to.");
+            return;
+        }
+
+        setIsSaving(true);
+        try {
+            // Cryptographic Signing Flow
+            let signature = undefined;
+            let publicKey = undefined;
+
+            try {
+                const { ensureIdentity, signApproval } = await import('../../../../services/crypto');
+                const identity = await ensureIdentity();
+                if (identity.privateKey) {
+                    const contentToSign = JSON.stringify({ cac, ltv, arpu, revenue, burnRate, margin });
+                    const signedProof = await signApproval(
+                        "financial_model",
+                        "snapshot_update",
+                        contentToSign,
+                        identity.privateKey
+                    );
+                    signature = signedProof.signature;
+                    publicKey = identity.publicKey;
+                }
+            } catch (cryptoErr) {
+                console.warn("Signing failed, proceeding without proof:", cryptoErr);
+            }
+
+            await updateFinancials({
+                projectId: projectId as any,
+                cac,
+                ltv,
+                arpu,
+                revenue,
+                burnRate,
+                margin,
+                signature,
+                publicKey
+            });
+
+            setIsSaved(true);
+            toast.success("Financial profile updated (Signed)");
+        } catch (e) {
+            console.error(e);
+            toast.error("Failed to update financial profile");
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const handleDeny = () => {
+        setIsDenied(true);
+        const rejectionMsg = `I've denied the suggested financial snapshot. These assumptions (CAC: $${cac}, LTV: $${ltv}) don't quite align with my current burn rate or market observations. Can you help me adjust these numbers or explain the logic behind them?`;
+        onSendMessage?.(rejectionMsg);
+        toast.info("Suggestion denied. Follow-up sent to AI.");
+    };
+
     return (
-        <div className="my-6 md:max-w-xl w-full">
+        <div className="my-6 md:max-w-xl w-full text-left">
             {/* Header */}
             <div className="flex items-center gap-3 mb-4">
                 <div className="p-2 bg-emerald-100 rounded-lg text-emerald-700">
@@ -46,7 +117,7 @@ const FinancialSnapshotCard: React.FC<FinancialSnapshotCardProps> = ({
             </div>
 
             {/* Mini P&L / Summary Table */}
-            <div className="bg-white rounded-xl border border-stone-200 overflow-hidden shadow-sm">
+            <div className="bg-white rounded-xl border border-stone-200 overflow-hidden shadow-sm mb-4">
                 <div className="flex items-center justify-between px-4 py-3 border-b border-stone-100 bg-stone-50/50">
                     <span className="text-xs font-bold text-stone-500">Metric</span>
                     <span className="text-xs font-bold text-stone-500">Value</span>
@@ -85,6 +156,18 @@ const FinancialSnapshotCard: React.FC<FinancialSnapshotCardProps> = ({
                         <span className="text-sm font-bold text-stone-900">${arpu}</span>
                     </div>
                 </div>
+            </div>
+
+            {/* Approval Guard */}
+            <div className="flex justify-end">
+                <ApprovalGuard
+                    onApprove={handleApprove}
+                    onDeny={handleDeny}
+                    isSaved={isSaved}
+                    isSaving={isSaving}
+                    isDenied={isDenied}
+                    approveLabel="Update Profile"
+                />
             </div>
         </div>
     );

@@ -10,7 +10,7 @@ import PitchDeck from './generative/PitchDeck';
 import ImageResult from './generative/ImageResult';
 import GroundingAccordion from './generative/GroundingAccordion';
 import ModelCanvasCard from './generative/ModelCanvasCard';
-import StartupJourneyTool from './StartupJourneyTool';
+import StartupJourneyTool from './generative/StartupJourneyTool';
 import CustomerCard from './generative/CustomerCard';
 import FinancialSnapshotCard from './generative/FinancialSnapshotCard';
 import SWOTAnalysisCard from './generative/SWOTAnalysisCard';
@@ -19,8 +19,10 @@ import MarketSizingCard from './generative/MarketSizingCard';
 import LegalRiskAssessmentCard from './generative/LegalRiskAssessmentCard';
 import ProcessFlowCard from './generative/ProcessFlowCard';
 import ActionCard from './generative/ActionCard';
+import ExecutionAudit from './generative/ExecutionAudit';
 import ExpenseAnalysisCard from './generative/ExpenseAnalysisCard';
 import CodeBlock from './generative/CodeBlock';
+import ThinkingStep from './generative/ThinkingStep';
 import { Table, BarChart3, Presentation, Image as ImageIcon, Layout, Cpu, ChevronDown, ChevronRight, CheckCircle2, Loader2, Sparkles } from 'lucide-react';
 
 interface MessageListProps {
@@ -100,23 +102,12 @@ const MessageList: React.FC<MessageListProps> = ({ messages, onSave, onSendMessa
             ? 'bg-nobel-dark text-white rounded-[24px] rounded-tr-sm px-6 py-4 shadow-xl border border-white/5'
             : 'text-gray-800 py-2 w-full'
             }`}>
-            {msg.role === 'assistant' && msg.reasoning && (
-              <div className="mb-4">
-                <details className="group/reasoning">
-                  <summary className="flex items-center gap-2 cursor-pointer text-xs font-bold uppercase tracking-wide text-stone-500 hover:text-stone-800 transition-colors select-none">
-                    {msg.content ? (
-                      <CheckCircle2 size={14} className="text-green-600" />
-                    ) : (
-                      <Loader2 size={14} className="animate-spin text-nobel-gold" />
-                    )}
-                    <span>Thinking Process</span>
-                    <ChevronDown size={14} className="transition-transform group-open/reasoning:rotate-180" />
-                  </summary>
-                  <div className="mt-2 p-4 bg-stone-50/80 rounded-xl text-sm text-stone-600 italic leading-relaxed whitespace-pre-wrap border border-stone-100/50 shadow-inner">
-                    {msg.reasoning}
-                  </div>
-                </details>
-              </div>
+            {msg.role === 'assistant' && (msg.reasoning || msg.content.length === 0) && (
+              <ThinkingStep
+                reasoning={msg.reasoning || ""}
+                isStreaming={msg.isStreaming || false}
+                hasContent={msg.content.length > 0}
+              />
             )}
             <div className={`prose prose-sm max-w-none ${msg.role === 'user' ? 'prose-invert' : 'prose-nobel text-[15.5px] leading-relaxed'}`}>
               <ReactMarkdown
@@ -124,7 +115,7 @@ const MessageList: React.FC<MessageListProps> = ({ messages, onSave, onSendMessa
                 components={{
                   code({ node, inline, className, children, ...props }: any) {
                     return (
-                      <CodeBlock className={className} inline={inline}>
+                      <CodeBlock className={className} inline={inline} onNavigate={onNavigate}>
                         {children}
                       </CodeBlock>
                     );
@@ -163,13 +154,7 @@ const MessageList: React.FC<MessageListProps> = ({ messages, onSave, onSendMessa
               <GroundingAccordion sources={msg.groundingSources} accuracyScore={msg.accuracyScore} />
             )}
 
-            {msg.role === 'assistant' && msg.content === '' && !msg.toolResults && !msg.isStreaming && (
-              <div className="flex items-center gap-2 h-8 mt-4">
-                <div className="w-2 h-2 bg-nobel-gold rounded-full animate-bounce"></div>
-                <div className="w-2 h-2 bg-nobel-gold rounded-full animate-bounce [animation-delay:0.2s]"></div>
-                <div className="w-2 h-2 bg-nobel-gold rounded-full animate-bounce [animation-delay:0.4s]"></div>
-              </div>
-            )}
+
 
             {/* Save Button for Assistant Messages */}
             {msg.role === 'assistant' && !msg.isStreaming && (
@@ -204,15 +189,34 @@ const MessageList: React.FC<MessageListProps> = ({ messages, onSave, onSendMessa
               {result.type === 'image' && <ImageResult {...result.data} onSave={onSave} />}
               {result.type === 'model_canvas' && <ModelCanvasCard {...result.data} projectId={projectId} onNavigate={onNavigate} />}
               {(result.type as any) === 'startup_journey' && <StartupJourneyTool {...result.data} projectId={projectId} />}
-              {(result.type as any) === 'customer_cards' && <CustomerCard {...result.data} />}
-              {(result.type as any) === 'financial_snapshot' && <FinancialSnapshotCard {...result.data} />}
-              {(result.type as any) === 'swot_analysis' && <SWOTAnalysisCard {...result.data} />}
-              {(result.type as any) === 'okr_card' && <OKRCard {...result.data} />}
-              {(result.type as any) === 'market_sizing' && <MarketSizingCard {...result.data} />}
-              {(result.type as any) === 'legal_risk' && <LegalRiskAssessmentCard {...result.data} />}
-              {(result.type as any) === 'process_flow' && <ProcessFlowCard {...result.data} />}
+              {(result.type as any) === 'customer_cards' && <CustomerCard {...result.data} projectId={projectId} onSendMessage={onSendMessage} />}
+              {(result.type as any) === 'financial_snapshot' && <FinancialSnapshotCard {...result.data} projectId={projectId} onSendMessage={onSendMessage} />}
+              {(result.type as any) === 'swot_analysis' && <SWOTAnalysisCard {...result.data} projectId={projectId} onSendMessage={onSendMessage} />}
+              {(result.type as any) === 'okr_card' && <OKRCard {...result.data} projectId={projectId} onSendMessage={onSendMessage} />}
+              {(result.type as any) === 'market_sizing' && <MarketSizingCard {...result.data} projectId={projectId} onSendMessage={onSendMessage} />}
+              {(result.type as any) === 'legal_risk' && <LegalRiskAssessmentCard {...result.data} projectId={projectId} onSendMessage={onSendMessage} />}
+              {(result.type as any) === 'process_flow' && <ProcessFlowCard {...result.data} projectId={projectId} onSendMessage={onSendMessage} />}
               {(result.type as any) === 'action_card' && <ActionCard {...result.data} onNavigate={onNavigate} />}
+              {(result.type as any) === 'execution_audit' && <ExecutionAudit {...result.data} />}
               {(result.type as any) === 'expense_analysis' && <ExpenseAnalysisCard {...result.data} />}
+
+              {/* Default Fallback for Unrecognized Tools */}
+              {!['table', 'chart', 'pitch_deck', 'image', 'model_canvas', 'startup_journey', 'customer_cards', 'financial_snapshot', 'swot_analysis', 'okr_card', 'market_sizing', 'legal_risk', 'process_flow', 'action_card', 'execution_audit', 'expense_analysis'].includes(result.type) && (
+                <div className="p-6 bg-stone-50/50 rounded-2xl border border-stone-100 animate-fade-in">
+                  <div className="flex items-center gap-2 mb-4 text-stone-400 font-bold text-[10px] uppercase tracking-wider">
+                    <Sparkles size={14} className="text-nobel-gold" /> Tool Results: {result.type}
+                  </div>
+                  <div className="prose prose-sm prose-stone max-w-none">
+                    {typeof result.data === 'string' ? (
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>{result.data}</ReactMarkdown>
+                    ) : (
+                      <pre className="text-[11px] font-mono bg-white p-4 rounded-xl border border-stone-100 overflow-x-auto">
+                        {JSON.stringify(result.data, null, 2)}
+                      </pre>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           ))}
         </div>

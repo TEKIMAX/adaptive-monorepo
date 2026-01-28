@@ -460,7 +460,11 @@ export default defineSchema({
     referralCode: v.optional(v.string()),
     referralCount: v.optional(v.number()),
     hasReceivedReferralSetupCredit: v.optional(v.boolean()),
+    publicKey: v.optional(v.string()), // Ed25519 Public Key
+    instanceUrl: v.optional(v.string()), // URL of the provisioned backend
+    instanceProjectSlug: v.optional(v.string()), // Slug of the provisioned project
   }).index("by_token", ["tokenIdentifier"])
+    .index("by_email", ["email"])
     .index("by_stripe_customer_id", ["stripeCustomerId"])
     .index("by_referral_code", ["referralCode"]),
 
@@ -854,6 +858,8 @@ export default defineSchema({
     changes: v.optional(v.string()), // JSON diff of changes
     metadata: v.optional(v.string()), // Additional context (JSON)
     ipAddress: v.optional(v.string()),
+    signature: v.optional(v.string()), // Cryptographic Signature (Ed25519)
+    publicKey: v.optional(v.string()), // Public Key used for signature
     timestamp: v.number(),
   }).index("by_project", ["projectId"])
     .index("by_user", ["userId"])

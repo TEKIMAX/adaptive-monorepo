@@ -159,3 +159,58 @@ export const saveMarketAnalysisResult = internalMutation({
     }
   }
 });
+
+export const updateMarketWithSignature = mutation({
+  args: {
+    projectId: v.id("projects"),
+    tam: v.number(),
+    sam: v.number(),
+    som: v.number(),
+    reportContent: v.string(),
+    signature: v.optional(v.string()),
+    publicKey: v.optional(v.string())
+  },
+  handler: async (ctx, args) => {
+    const { project, orgId, user } = await verifyProjectAccess(ctx, args.projectId);
+
+    const existing = await ctx.db
+      .query("market_data")
+      .withIndex("by_project", (q: any) => q.eq("projectId", args.projectId))
+      .first();
+
+    const payload = {
+      tam: args.tam,
+      sam: args.sam,
+      som: args.som,
+      reportContent: args.reportContent,
+      updatedAt: Date.now(),
+      source: 'AI'
+    };
+
+    if (existing) {
+      await ctx.db.patch(existing._id, payload);
+    } else {
+      await ctx.db.insert("market_data", {
+        projectId: args.projectId,
+        orgId,
+        ...payload
+      });
+    }
+
+    // Log Activity with Signature
+    await ctx.db.insert("activity_log", {
+      projectId: args.projectId,
+      orgId,
+      userId: user.tokenIdentifier,
+      userName: user.name || "Unknown User",
+      action: "UPDATE",
+      entityType: "market_research",
+      entityId: args.projectId as string,
+      entityName: "Market Sizing",
+      changes: "Updated market sizing via AI Suggestion",
+      signature: args.signature,
+      publicKey: args.publicKey,
+      timestamp: Date.now()
+    });
+  }
+});

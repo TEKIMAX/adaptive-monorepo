@@ -15,16 +15,15 @@ interface LandingPageProps {
 const features = [
    {
       id: 'ai',
-      title: 'Adaptive AI & Compliance',
-      desc: 'Audit trails and cryptographic sign-off of actions.',
-      longDesc: 'The Adaptive Engine ensures institutional-grade compliance through human-driven audit trails. Every AI-assisted decision is cryptographically signed off by you, building an immutable record of venture integrity.',
+      title: 'Co-Adaptive System',
+      desc: 'Deep collaboration between human intuition and AI intelligence.',
+      longDesc: 'A true Co-Adaptive System where human creativity and AI intelligence work in unison. The engine learns from your strategic decisions while ensuring integrity through human-driven audit trails and cryptographic sign-offs.',
       image: '/images/milad-fakurian-F4qy_1tAFfs-unsplash.jpg',
       screenshot: '/images/nobel-chat.png',
       align: 'object-center',
       details: [
          'Cryptographic action sign-off',
          'Human-driven audit trails',
-         'Institutional-grade compliance',
          'Strategic drift monitoring'
       ]
    },
@@ -122,10 +121,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
 
    const mobileNavItems = [
       { id: 'problem', label: 'The Problem' },
-      { id: 'solution', label: 'Philosophy' },
-      { id: 'mission', label: 'Mission' },
-      { id: 'features', label: 'Features' },
-      { id: 'pricing', label: 'Pricing' },
+      { id: 'community', label: 'Impact' },
+      { id: 'features', label: 'Co-Adaptive System' },
+      { id: 'intelligence', label: 'Intelligence' },
    ];
 
    return (
@@ -162,12 +160,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
 
                {/* Desktop Navigation - Centered */}
                <div className="hidden md:flex items-center gap-6 text-sm font-medium text-stone-600">
-                  <a href="https://tekimax.com" className="hover:text-stone-900 transition-colors">Home</a>
+                  <a href="#" className="hover:text-stone-900 transition-colors">Home</a>
                   <a href="#problem" className="hover:text-stone-900 transition-colors">The Problem</a>
-                  <a href="#solution" className="hover:text-stone-900 transition-colors">Philosophy</a>
-                  <a href="#mission" className="hover:text-stone-900 transition-colors">Mission</a>
-                  <a href="#features" className="hover:text-stone-900 transition-colors">Features</a>
-                  <a href="#pricing" className="hover:text-stone-900 transition-colors">Pricing</a>
+                  <a href="#community" className="hover:text-stone-900 transition-colors">Impact</a>
+                  <a href="#features" className="hover:text-stone-900 transition-colors">Co-Adaptive System</a>
+                  <a href="#intelligence" className="hover:text-stone-900 transition-colors">Intelligence</a>
                </div>
 
                {/* Right Actions */}
@@ -190,7 +187,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
             {isMobileMenuOpen && (
                <div className="fixed inset-0 top-20 bg-[#F9F8F4] z-40 flex flex-col p-8 pointer-events-auto md:hidden animate-in fade-in slide-in-from-top-10 duration-300 border-t border-stone-200">
                   <div className="flex flex-col gap-6 text-xl font-serif font-bold text-stone-900">
-                     <a href="https://tekimax.com" className="text-left py-2 hover:text-nobel-gold transition-colors">Home</a>
+                     <a href="#" className="text-left py-2 hover:text-nobel-gold transition-colors">Home</a>
                      {mobileNavItems.map((item) => (
                         <button
                            key={item.id}
@@ -416,8 +413,65 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
             </div>
          </section>
 
+         {/* --- VETERAN & MILITARY SPOUSE SECTION --- */}
+         <section id="community" className="py-24 px-6 md:px-12 bg-white border-b border-stone-200">
+            <div className="max-w-7xl mx-auto">
+               <div className="flex flex-col lg:flex-row items-center gap-16">
+                  {/* Content Column */}
+                  <div className="lg:w-1/2 space-y-8">
+                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-nobel-gold/10 border border-nobel-gold/20 backdrop-blur-sm">
+                        <Users className="w-4 h-4 text-nobel-gold" />
+                        <span className="text-xs font-bold tracking-widest text-[#C5A065]">IMPACT -- SUPPORTING OUR VETERANS AND THEIR FAMILIES</span>
+                     </div>
+
+                     <h2 className="text-4xl md:text-5xl font-serif text-stone-900 leading-tight">
+                        Empowering <span className="text-nobel-gold">Veterans</span>, <br />
+                        <span className="text-nobel-gold">Military Families</span>, and <span className="text-stone-400">Every Founder.</span>
+                     </h2>
+
+                     <div className="space-y-6 text-lg text-stone-600 font-light leading-relaxed">
+                        <p>
+                           The military community is forged in discipline, resilience, and strategic execution: traits that define <strong>Startup Success.</strong>
+                        </p>
+                        <p>
+                           Whether you are transitioning from service, a military spouse navigating the uncertainty of service life, or an entrepreneur from any walk of life, we are building this platform to passionately support your journey.
+                        </p>
+                        <p>
+                           Our commitment is to empower those who have served to become industry-defining founders, while providing every builder the tools to turn raw ambition into market reality.
+                        </p>
+                     </div>
+
+                     <div className="pt-4">
+                        <div className="flex items-center gap-4 p-4 rounded-xl bg-stone-50 border border-stone-200">
+                           <ShieldCheck className="w-8 h-8 text-nobel-gold" />
+                           <div>
+                              <p className="text-sm font-bold text-stone-900">Veteran Founded & Supported</p>
+                              <p className="text-xs text-stone-500">Committed to those who have served.</p>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+
+                  {/* Image Column */}
+                  <div className="lg:w-1/2 w-full">
+                     <div className="relative">
+                        <div className="absolute -inset-2 bg-gradient-to-tr from-nobel-gold/30 to-transparent rounded-[2.5rem] blur-2xl opacity-50"></div>
+                        <div className="relative rounded-3xl overflow-hidden border-8 border-white shadow-2xl">
+                           <img
+                              src="/images/veteran-founders.png"
+                              alt="Veteran and Military Spouse Founders Community"
+                              className="w-full h-full object-cover"
+                           />
+                           <div className="absolute inset-0 bg-gradient-to-t from-stone-900/40 to-transparent"></div>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </section>
+
          {/* --- EXPLORATION SECTION: Horizontal Slices --- */}
-         <section className="relative w-full min-h-[80vh] lg:h-[80vh] bg-stone-900 border-b-4 border-nobel-gold py-12 group/exploration overflow-hidden">
+         <section id="features" className="relative w-full min-h-[80vh] lg:h-[80vh] bg-stone-900 border-b-4 border-nobel-gold py-12 group/exploration overflow-hidden">
             <div className="h-full flex flex-col lg:flex-row">
                {features.map((feature, i) => (
                   <div
@@ -467,6 +521,85 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
             </div>
          </section>
 
+         {/* --- INFRASTRUCTURE / SECURITY SECTION --- */}
+         {/* <section id="infrastructure" className="relative py-24 px-6 md:px-12 bg-white border-b border-stone-200 overflow-hidden">
+            <div className="max-w-7xl mx-auto">
+               <div className="flex flex-col lg:flex-row items-center gap-16">
+                  <div className="lg:w-1/2 w-full order-2 lg:order-1">
+                     <div className="relative group">
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-gradient-to-tr from-nobel-gold/15 to-transparent rounded-full blur-3xl opacity-50 group-hover:opacity-100 transition-opacity duration-1000"></div>
+
+                        <div className="relative rounded-3xl overflow-hidden border border-stone-200 shadow-2xl transform group-hover:scale-[1.01] transition-transform duration-700">
+                           <img
+                              src="/images/infrastructure-secure.png"
+                              alt="Secure Infrastructure Isolation"
+                              className="w-full h-auto"
+                           />
+                           <div className="absolute inset-0 bg-gradient-to-t from-stone-900/40 via-transparent to-transparent opacity-40"></div>
+                        </div>
+
+                        <div className="absolute -bottom-6 -right-6 bg-white p-6 rounded-2xl shadow-xl border border-stone-100 hidden md:block">
+                           <div className="flex items-center gap-4">
+                              <div className="p-3 bg-nobel-gold/10 rounded-xl">
+                                 <Lock className="w-6 h-6 text-nobel-gold" />
+                              </div>
+                              <div>
+                                 <p className="text-xs font-bold text-stone-900 uppercase tracking-widest">Isolated Environment</p>
+                                 <p className="text-[10px] text-stone-500">Dedicated resources.</p>
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+                  <div className="lg:w-1/2 space-y-8 order-1 lg:order-2">
+                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-stone-900 text-white border border-nobel-gold/30">
+                        <ShieldCheck className="w-4 h-4 text-nobel-gold" />
+                        <span className="text-[10px] font-bold tracking-widest text-nobel-gold uppercase">Infrastructure Isolation</span>
+                     </div>
+
+                     <h2 className="font-serif text-3xl md:text-5xl text-stone-900 leading-tight">
+                        Ensuring that your data and application logic live in their <span className="text-nobel-gold font-bold italic text-2xl md:text-4xl">own dedicated, private environments.</span>
+                     </h2>
+
+                     <div className="space-y-6">
+                        <p className="text-lg text-stone-600 leading-relaxed font-light">
+                           Combined with automated end-to-end encryption and enterprise-grade identity management, we provide a security posture that allows you to scale with absolute confidence in your data's integrity and privacy. Upon request and based on the needs of your venture, we can enable <strong>HIPAA compliance</strong> on your dedicated isolated environment.
+                        </p>
+
+                        <div className="space-y-6 pt-4">
+                           <div className="space-y-3">
+                              <h4 className="font-serif font-bold text-stone-800 text-lg flex items-center gap-2">
+                                 <div className="w-1.5 h-1.5 rounded-full bg-nobel-gold"></div>
+                                 Data Ownership
+                              </h4>
+                              <p className="text-sm text-stone-500 leading-relaxed font-light">
+                                 You own your data. We provision dedicated storage and database resources for every organization, providing clear audit trails.
+                              </p>
+                           </div>
+                        </div>
+
+                        <div className="p-6 bg-[#F9F8F4] rounded-2xl border border-stone-200 shadow-sm">
+                           <h4 className="font-serif font-bold text-stone-900 mb-2">Elastic Performance</h4>
+                           <p className="text-sm text-stone-500 font-light leading-relaxed">
+                              Our infrastructure scales with your business needs: ensuring you always have the power you need without unnecessary overhead.
+                           </p>
+                        </div>
+                     </div>
+
+                     <div className="pt-4">
+                        <button
+                           onClick={() => setShowTrialDialog(true)}
+                           className="group flex items-center gap-2 text-stone-900 font-bold uppercase tracking-widest text-xs"
+                        >
+                           Explore Security Architecture
+                           <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                        </button>
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </section> */}
+
 
          {/* --- DOCUMENTS SECTION (Moved Up) --- */}
          {/* <section id="documents" className="py-24 px-6 md:px-12 bg-stone-900 border-t border-stone-800">
@@ -511,7 +644,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
          </section> */}
 
          {/* --- AI CHAT SECTION --- */}
-         <section className="py-24 px-6 md:px-12 bg-[#F9F8F4] border-t border-stone-200">
+         <section id="intelligence" className="py-24 px-6 md:px-12 bg-[#F9F8F4] border-t border-stone-200">
             <div className="max-w-7xl mx-auto">
                <div className="flex flex-col lg:flex-row items-center gap-16">
                   {/* Left: Image */}
@@ -542,20 +675,16 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                      </p>
 
                      <div className="grid grid-cols-1 gap-4">
-                        <div className="group relative p-6 bg-stone-900 rounded-2xl border border-stone-800 shadow-2xl transition-all duration-300 hover:-translate-y-1 hover:border-nobel-gold/50">
-                           <div className="absolute top-0 right-0 w-32 h-32 bg-nobel-gold/10 rounded-full blur-[60px] -mr-16 -mt-16 group-hover:bg-nobel-gold/20 transition-colors"></div>
-
+                        <div className="group relative p-6 bg-stone-900 rounded-2xl border border-stone-800 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:border-nobel-gold/50 overflow-hidden">
+                           <div className="absolute top-0 right-0 w-32 h-32 bg-nobel-gold/5 rounded-full -mr-16 -mt-16"></div>
                            <div className="relative z-10 flex items-start gap-5">
                               <div className="p-3 bg-nobel-gold/10 rounded-xl border border-nobel-gold/20 shrink-0 group-hover:bg-nobel-gold/20 transition-colors">
-                                 <ShieldCheck className="w-6 h-6 text-nobel-gold" />
+                                 <MessageSquare className="w-6 h-6 text-nobel-gold" />
                               </div>
                               <div>
-                                 <div className="flex items-center gap-2 mb-2">
-                                    <h4 className="font-serif font-bold text-white text-lg">Cryptographic Audit Trail</h4>
-                                    <div className="w-1.5 h-1.5 rounded-full bg-nobel-gold animate-pulse"></div>
-                                 </div>
+                                 <h4 className="font-serif font-bold text-white text-lg mb-2">Project-Specific Intelligence</h4>
                                  <p className="text-sm text-stone-400 leading-relaxed font-light">
-                                    Every strategic action requires your <strong>cryptographic sign-off</strong>. We maintain an immutable audit trail of human-driven decisions, ensuring institutional compliance from Day One.
+                                    Adaptive AI doesn't just "chat"—it thinks within the framework of your venture. Every response is grounded in your roadmaps, documents, and unique market data.
                                  </p>
                               </div>
                            </div>
@@ -563,15 +692,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
 
                         <div className="group relative p-6 bg-white rounded-2xl border border-stone-200 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-nobel-gold/30 overflow-hidden">
                            <div className="absolute bottom-0 right-0 w-24 h-24 bg-stone-50 rounded-full -mr-8 -mb-8"></div>
-
                            <div className="relative z-10 flex items-start gap-5">
                               <div className="p-3 bg-stone-900 rounded-xl shrink-0 group-hover:bg-nobel-gold transition-colors duration-300">
                                  <Activity className="w-6 h-6 text-white" />
                               </div>
                               <div>
-                                 <h4 className="font-serif font-bold text-stone-900 text-lg mb-2">Human-AI Integrity Compliance</h4>
+                                 <h4 className="font-serif font-bold text-stone-900 text-lg mb-2">Real-Time Context Sync</h4>
                                  <p className="text-sm text-stone-500 leading-relaxed font-light">
-                                    Our engine monitors for <strong>strategic drift</strong>, but only you can pull the trigger. We blend machine intelligence with human oversight to meet the rigorous standards of institutional due diligence.
+                                    As you refine your Business Model Canvas or update your Financial Model, the Adaptive Engine instantly absorbs the new context, ensuring its advice is always perfectly aligned.
                                  </p>
                               </div>
                            </div>

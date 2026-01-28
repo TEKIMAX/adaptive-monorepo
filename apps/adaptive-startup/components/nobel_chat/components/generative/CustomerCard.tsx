@@ -1,5 +1,10 @@
+
 import React, { useState } from 'react';
 import { Play, User, DollarSign, Tag, FileText, X } from 'lucide-react';
+import { useMutation } from "convex/react";
+import { api } from "../../../../convex/_generated/api";
+import { toast } from 'sonner';
+import ApprovalGuard from './ApprovalGuard';
 
 interface Customer {
     name: string;
@@ -13,10 +18,16 @@ interface Customer {
 
 interface CustomerCardProps {
     customers: Customer[];
+    projectId?: string | null;
+    onSendMessage?: (text: string) => void;
 }
 
-const CustomerCard: React.FC<CustomerCardProps> = ({ customers }) => {
+const CustomerCard: React.FC<CustomerCardProps> = ({ customers, projectId, onSendMessage }) => {
+    const saveCustomers = useMutation(api.customers.bulkAddInterviews);
     const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
+    const [isSaved, setIsSaved] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const [isDenied, setIsDenied] = useState(false);
 
     const getStatusColor = (status: string) => {
         switch (status.toLowerCase()) {
@@ -38,8 +49,73 @@ const CustomerCard: React.FC<CustomerCardProps> = ({ customers }) => {
         }
     };
 
+    const handleApprove = async () => {
+        if (!projectId) {
+            toast.error("No project selected to save to.");
+            return;
+        }
+
+        setIsSaving(true);
+        try {
+            // Cryptographic Signing Flow
+            let signature = undefined;
+            let publicKey = undefined;
+
+            try {
+                const { ensureIdentity, signApproval } = await import('../../../../services/crypto');
+                const identity = await ensureIdentity();
+                if (identity.privateKey) {
+                    const contentToSign = JSON.stringify(customers);
+                    const signedProof = await signApproval(
+                        "customer_profiles",
+                        "bulk_creation",
+                        contentToSign,
+                        identity.privateKey
+                    );
+                    signature = signedProof.signature;
+                    publicKey = identity.publicKey;
+                }
+            } catch (cryptoErr) {
+                console.warn("Signing failed, proceeding without proof:", cryptoErr);
+            }
+
+            const formattedInterviews = customers.map(c => ({
+                customerStatus: c.status,
+                customData: JSON.stringify({
+                    "Name": c.name,
+                    "Role": c.role,
+                    "Notes": c.notes,
+                    "Tags": c.tags?.join(', ') || ""
+                }),
+                willingnessToPay: c.willingnessToPay
+            }));
+
+            await saveCustomers({
+                projectId,
+                interviews: formattedInterviews,
+                signature,
+                publicKey
+            });
+
+            setIsSaved(true);
+            toast.success(`Saved ${customers.length} customer profiles (Signed)`);
+        } catch (e) {
+            console.error(e);
+            toast.error("Failed to save customer profiles");
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const handleDeny = () => {
+        setIsDenied(true);
+        const rejectionMsg = `I've denied the suggested customer profiles. This segment logic doesn't align with our current findings. Can you suggest a different customer archetype or help me refine these profiles based on [Specific Feedback]?`;
+        onSendMessage?.(rejectionMsg);
+        toast.info("Suggestion denied. Follow-up sent to AI.");
+    };
+
     return (
-        <div className="space-y-4 my-6">
+        <div className="space-y-4 my-6 text-left">
             <div className="grid gap-4 md:grid-cols-1 lg:grid-cols-2">
                 {customers.map((customer, idx) => (
                     <div key={idx} className="bg-white rounded-xl p-5 border border-stone-100 shadow-sm hover:shadow-md transition-shadow relative group">
@@ -97,6 +173,18 @@ const CustomerCard: React.FC<CustomerCardProps> = ({ customers }) => {
                         )}
                     </div>
                 ))}
+            </div>
+
+            {/* Approval Guard */}
+            <div className="flex justify-end pt-2">
+                <ApprovalGuard
+                    onApprove={handleApprove}
+                    onDeny={handleDeny}
+                    isSaved={isSaved}
+                    isSaving={isSaving}
+                    isDenied={isDenied}
+                    approveLabel={`Approve ${customers.length} Profiles`}
+                />
             </div>
 
             {/* Video Modal */}

@@ -1,4 +1,4 @@
-import { action, internalMutation } from "./_generated/server";
+import { action, internalMutation, internalAction } from "./_generated/server";
 import { api, internal } from "./_generated/api";
 import { v } from "convex/values";
 import Stripe from "stripe";
@@ -542,6 +542,8 @@ export const getConnectedAccountData = action({
         };
     }
 });
+
+// Provisioning trigger removed - handled by BRAIN Control Plane
 
 export const createConnectedLoginLink = action({
     args: { stripeAccountId: v.string() },

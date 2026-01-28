@@ -79,7 +79,9 @@ export const logActivity = mutation({
         entityId: v.string(),
         entityName: v.optional(v.string()),
         changes: v.optional(v.string()),
-        metadata: v.optional(v.string())
+        metadata: v.optional(v.string()),
+        signature: v.optional(v.string()),
+        publicKey: v.optional(v.string())
     },
     handler: async (ctx: any, args: any) => {
         const { orgId, userId } = await checkAuth(ctx);
@@ -101,6 +103,8 @@ export const logActivity = mutation({
             entityName: args.entityName,
             changes: args.changes,
             metadata: args.metadata,
+            signature: args.signature,
+            publicKey: args.publicKey,
             timestamp: Date.now()
         });
     }
