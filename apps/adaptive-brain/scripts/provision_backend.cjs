@@ -3,7 +3,7 @@ const { execSync } = require('child_process');
 const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 
 async function createConvexProject(teamId, projectName, token) {
-    const url = `https://api.convex.dev/v1/teams/${teamId}/projects`;
+    const url = `https://api.convex.dev/v1/teams/${teamId}/create_project`;
     console.log(`Calling Convex API: ${url}`);
 
     const response = await fetch(url, {
