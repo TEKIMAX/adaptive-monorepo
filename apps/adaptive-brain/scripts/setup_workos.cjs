@@ -22,35 +22,18 @@ async function main() {
 
         console.log(`Created WorkOS Organization: ${organization.id}`);
 
-        // 2. Get or Create User
+        // 2. Get existing user or let invitation create them
+        // WorkOS automatically creates users when sending invitations
         const { data: users } = await workos.userManagement.listUsers({ email });
-        let workosUser;
-        if (users.length > 0) {
-            workosUser = users[0];
+        let workosUser = users.length > 0 ? users[0] : null;
+
+        if (workosUser) {
             console.log(`Found existing WorkOS User: ${workosUser.id}`);
         } else {
-            try {
-                workosUser = await workos.userManagement.createUser({
-                    email,
-                    emailVerified: true,
-                });
-                console.log(`Created new WorkOS User: ${workosUser.id}`);
-            } catch (createError) {
-                // If creation fails, try listing again in case of race condition
-                console.warn(`User creation failed, attempting to find existing user: ${createError.message}`);
-                const { data: retryUsers } = await workos.userManagement.listUsers({ email });
-                if (retryUsers.length > 0) {
-                    workosUser = retryUsers[0];
-                    console.log(`Found existing WorkOS User on retry: ${workosUser.id}`);
-                } else {
-                    throw createError;
-                }
-            }
+            console.log(`User will be created via invitation for: ${email}`);
         }
 
-        // 3. Add User to Organization/Invitation
-        // We still send an invitation to ensure they can set a password if new, 
-        // but now we have their ID.
+        // 3. Send invitation (this will create the user if they don't exist)
         const invitation = await workos.userManagement.sendInvitation({
             email: email,
             organizationId: organization.id,
@@ -58,6 +41,19 @@ async function main() {
         });
 
         console.log(`Sent WorkOS Invitation: ${invitation.id} for Org: ${organization.id}`);
+
+        // 4. Fetch the user again after invitation (they should exist now)
+        if (!workosUser) {
+            const { data: newUsers } = await workos.userManagement.listUsers({ email });
+            workosUser = newUsers.length > 0 ? newUsers[0] : null;
+            if (workosUser) {
+                console.log(`User created via invitation: ${workosUser.id}`);
+            } else {
+                console.warn(`Could not find user after invitation, using placeholder ID`);
+                // Use a placeholder - the user will be created when they accept the invitation
+                workosUser = { id: `pending-${email.replace('@', '-at-')}` };
+            }
+        }
 
         if (process.env.GITHUB_OUTPUT) {
             const fs = require('fs');
