@@ -12,7 +12,7 @@ async function createConvexProject(teamId, projectName, token) {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ projectName: projectName, deploymentType: 'cloud' }),
+        body: JSON.stringify({ projectName: projectName, deploymentType: 'prod' }),
     });
 
     if (!response.ok) {
