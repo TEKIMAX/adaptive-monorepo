@@ -15,6 +15,16 @@ http.route({
         // Skip verification for now or use process.env.STRIPE_WEBHOOK_SECRET
         const event = JSON.parse(payload);
 
+        // Save Stripe event to database for auditing
+        await ctx.runMutation(internal.provisioning.saveStripeEvent, {
+            eventId: event.id,
+            eventType: event.type,
+            customerId: event.data.object.customer || event.data.object.id,
+            customerEmail: event.data.object.customer_email || event.data.object.email,
+            subscriptionId: event.data.object.id,
+            payload: event,
+        });
+
         if (event.type === "customer.subscription.created" || event.type === "customer.subscription.updated") {
             const subscription = event.data.object;
             const customerEmail = subscription.customer_email || (event as any).data.object.email; // Fallback strategy
@@ -68,6 +78,30 @@ http.route({
         // await fetch(`${instanceUrl}/api/sync-subscription`, { ... });
 
         return new Response("OK", { status: 200 });
+    }),
+});
+
+// Query endpoint for GitHub Actions to get user data
+http.route({
+    path: "/user-data",
+    method: "GET",
+    handler: httpAction(async (ctx, request) => {
+        const url = new URL(request.url);
+        const email = url.searchParams.get("email");
+
+        if (!email) {
+            return new Response(JSON.stringify({ error: "Email required" }), {
+                status: 400,
+                headers: { "Content-Type": "application/json" }
+            });
+        }
+
+        const userData = await ctx.runQuery(internal.provisioning.getUserData, { email });
+
+        return new Response(JSON.stringify(userData), {
+            status: 200,
+            headers: { "Content-Type": "application/json" }
+        });
     }),
 });
 
