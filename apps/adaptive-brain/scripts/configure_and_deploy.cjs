@@ -28,27 +28,28 @@ async function createDeployKey(deploymentName, token) {
     return result.deployKey;
 }
 
-async function setEnvironmentVariable(deploymentName, key, value, token) {
-    const url = `https://api.convex.dev/api/deployment/${deploymentName}/environment_variables`;
+async function setEnvironmentVariables(deploymentName, envVars, token) {
+    const url = `https://${deploymentName}.convex.cloud/api/v1/update_environment_variables`;
+
+    const changes = Object.entries(envVars)
+        .filter(([_, value]) => value) // Only include non-empty values
+        .map(([name, value]) => ({ name, value }));
 
     const response = await fetch(url, {
         method: 'POST',
         headers: {
-            'Authorization': `Bearer ${token}`,
+            'Authorization': `Convex ${token}`,
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-            name: key,
-            value: value,
-        }),
+        body: JSON.stringify({ changes }),
     });
 
     if (!response.ok) {
         const text = await response.text();
-        throw new Error(`Failed to set ${key}: ${response.status} ${text}`);
+        throw new Error(`Failed to set environment variables: ${response.status} ${text}`);
     }
 
-    console.log(`✓ Set ${key}`);
+    console.log(`✓ Set ${changes.length} environment variables`);
 }
 
 async function deployCode(deploymentName, deployKey) {
@@ -96,11 +97,7 @@ async function main() {
 
         // Step 2: Set environment variables
         console.log('\n2. Setting environment variables...');
-        for (const [key, value] of Object.entries(envVars)) {
-            if (value) {
-                await setEnvironmentVariable(deploymentName, key, value, teamToken);
-            }
-        }
+        await setEnvironmentVariables(deploymentName, envVars, teamToken);
 
         // Step 3: Deploy code using the deploy key
         console.log('\n3. Deploying code...');
