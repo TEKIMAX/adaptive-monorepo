@@ -3,6 +3,7 @@ name: Provision Backend
 on:
   repository_dispatch:
     types: [provision_backend]
+  workflow_dispatch:
 
 jobs:
   provision:
