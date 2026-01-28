@@ -81,6 +81,7 @@ async function main() {
 
     const envVars = {
         STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
+        WORKOS_API_KEY: process.env.WORKOS_API_KEY,
         WORKOS_ORG_ID: process.env.WORKOS_ORG_ID,
         WORKOS_CLIENT_ID: process.env.WORKOS_CLIENT_ID,
         GEMINI_API_KEY: process.env.GEMINI_API_KEY,

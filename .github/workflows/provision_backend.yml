@@ -71,6 +71,7 @@ jobs:
           DEPLOYMENT_NAME: ${{ steps.convex.outputs.convex_deployment_name }}
           CONVEX_URL: ${{ steps.convex.outputs.convex_url }}
           STRIPE_WEBHOOK_SECRET: ${{ steps.stripe.outputs.stripe_webhook_secret }}
+          WORKOS_API_KEY: ${{ secrets.WORKOS_API_KEY }}
           WORKOS_ORG_ID: ${{ steps.workos.outputs.workos_org_id }}
           WORKOS_CLIENT_ID: ${{ secrets.WORKOS_CLIENT_ID }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
